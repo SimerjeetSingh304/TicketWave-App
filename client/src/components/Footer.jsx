@@ -42,7 +42,7 @@ const Footer = () => {
         {/* Brand details */}
         <div className="max-w-xs space-y-4">
           <Link to="/" className="text-2xl font-black tracking-tight text-white block mb-2">
-            StellarEvents
+            TicketWave
           </Link>
           <p className="text-xs text-slate-400 leading-relaxed font-medium">
             The global standard for secure event ticketing. Experience live like never before.
@@ -83,15 +83,15 @@ const Footer = () => {
           {/* Contact */}
           <div className="space-y-4 col-span-2 md:col-span-1">
             <h4 className="text-white text-[10px] uppercase tracking-[0.2em] font-black">CONTACT</h4>
-            <a href="mailto:support@stellarevents.com" className="text-xs font-semibold hover:text-white transition-colors block mt-3">
-              support@stellarevents.com
+            <a href="mailto:support@ticketwave.com" className="text-xs font-semibold hover:text-white transition-colors block mt-3">
+              support@ticketwave.com
             </a>
           </div>
 
           {/* Copyright Area */}
           <div className="col-span-2 md:col-span-1 flex flex-col justify-between items-start md:items-end">
             <div className="text-[10px] text-slate-500 font-medium text-left md:text-right max-w-[150px]">
-              © 2026 StellarEvents Ticketing. All rights reserved.
+              © 2026 TicketWave Ticketing. All rights reserved.
             </div>
             <div className="flex space-x-2 mt-4 md:mt-0">
               {/* Payment/Trust small icons */}

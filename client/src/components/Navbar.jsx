@@ -46,7 +46,7 @@ const Navbar = () => {
         {/* Brand Logo & Links */}
         <div className="flex items-center space-x-12">
           <Link to="/" className="text-2xl font-black tracking-tight text-white">
-            StellarEvents
+            TicketWave
           </Link>
 
           {/* Desktop Navigation Links */}

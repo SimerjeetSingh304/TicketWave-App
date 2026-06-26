@@ -87,7 +87,7 @@ const Auth = ({ isLoginMode }) => {
                 {isLogin ? 'Sign in' : 'Create an account'}
               </h2>
               <p className="text-slate-400 font-light text-sm">
-                {isLogin ? 'Enter your details to proceed.' : 'Join StellarEvents for exclusive access.'}
+                {isLogin ? 'Enter your details to proceed.' : 'Join TicketWave for exclusive access.'}
               </p>
             </div>
 
