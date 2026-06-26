@@ -62,7 +62,11 @@ app.get('/health', (req, res) => {
 // Capture and process global exceptions
 app.use(errorHandler);
 
-const PORT = env.port || 5000;
-server.listen(PORT, () => {
-  console.log(`\x1b[32m[Server] Listening on port ${PORT}\x1b[0m`);
-});
+if (process.env.NODE_ENV !== 'production') {
+  const PORT = env.port || 5000;
+  server.listen(PORT, () => {
+    console.log(`\x1b[32m[Server] Listening on port ${PORT}\x1b[0m`);
+  });
+}
+
+export default app;
