@@ -1,13 +1,22 @@
-import React, { useState } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
+import React, { useState, useEffect } from 'react';
+import { Link, useNavigate, useSearchParams } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
-import { Bell, LogOut, Ticket, LayoutDashboard, Shield, User, Menu, X } from 'lucide-react';
+import { Bell, LogOut, Ticket, LayoutDashboard, Shield, User, Menu, X, Search } from 'lucide-react';
 
 const Navbar = () => {
   const { user, logout, notifications, setNotifications } = useAuth();
   const navigate = useNavigate();
   const [showNotifications, setShowNotifications] = useState(false);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const [isScrolled, setIsScrolled] = useState(false);
+
+  useEffect(() => {
+    const handleScroll = () => {
+      setIsScrolled(window.scrollY > 20);
+    };
+    window.addEventListener('scroll', handleScroll);
+    return () => window.removeEventListener('scroll', handleScroll);
+  }, []);
 
   const unreadCount = notifications.length;
 
@@ -21,51 +30,59 @@ const Navbar = () => {
     setShowNotifications(false);
   };
 
+  const [searchParams] = useSearchParams();
+  const currentCategory = searchParams.get('category')?.toLowerCase() || '';
+
+  const navLinks = ['Concerts', 'Sports', 'Comedy', 'Music', 'Exhibitions'];
+
   return (
-    <nav className="sticky top-0 z-40 backdrop-blur-xl border-b px-6 py-4" style={{ background: 'rgba(8, 8, 16, 0.8)', borderBottomColor: 'rgba(255,255,255,0.06)' }}>
+    <nav className={`fixed top-0 left-0 right-0 w-full z-50 transition-all duration-300 px-6 py-4 ${
+      isScrolled 
+        ? 'backdrop-blur-xl bg-[#030305]/80 border-b border-white/[0.08] shadow-[0_4px_30px_rgba(0,0,0,0.1)]' 
+        : 'bg-transparent border-b border-transparent py-6'
+    }`}>
       <div className="max-w-7xl mx-auto flex items-center justify-between">
         
-        {/* Brand Logo */}
-        <Link to="/" className="flex items-center space-x-2 text-2xl font-bold tracking-tight">
-          <span className="text-teal-500 font-extrabold bg-gradient-to-r from-teal-400 to-cyan-500 bg-clip-text text-transparent">TicketWave</span>
-          <span>🌊</span>
-        </Link>
+        {/* Brand Logo & Links */}
+        <div className="flex items-center space-x-12">
+          <Link to="/" className="text-2xl font-black tracking-tight text-white">
+            StellarEvents
+          </Link>
 
-        {/* Desktop Navigation Links */}
-        <div className="hidden md:flex items-center space-x-6">
-          <Link to="/" className="text-slate-300 hover:text-white transition-colors font-medium">Explore Events</Link>
-          
-          {user && (
-            <>
-              {/* Common User Role Links */}
-              <Link to="/my-bookings" className="flex items-center space-x-1.5 text-slate-300 hover:text-white transition-colors font-medium">
-                <Ticket className="w-4.5 h-4.5 text-teal-400" />
-                <span>My Bookings</span>
+          {/* Desktop Navigation Links */}
+          <div className="hidden md:flex items-center space-x-6 text-sm font-semibold">
+            {navLinks.map((link) => (
+              <Link 
+                key={link}
+                to={`/?category=${link}`} 
+                className={
+                  currentCategory === link.toLowerCase()
+                    ? "text-white border-b-2 border-indigo-500 pb-1"
+                    : "text-slate-400 hover:text-white transition-colors"
+                }
+              >
+                {link}
               </Link>
-
-              {/* Organizer Role Links */}
-              {(user.role === 'organizer' || user.role === 'admin') && (
-                <Link to="/dashboard" className="flex items-center space-x-1.5 text-slate-300 hover:text-white transition-colors font-medium">
-                  <LayoutDashboard className="w-4.5 h-4.5 text-emerald-400" />
-                  <span>Organizer Dashboard</span>
-                </Link>
-              )}
-
-              {/* Admin Role Links */}
-              {user.role === 'admin' && (
-                <Link to="/admin" className="flex items-center space-x-1.5 text-slate-300 hover:text-white transition-colors font-medium">
-                  <Shield className="w-4.5 h-4.5 text-rose-400" />
-                  <span>Admin Panel</span>
-                </Link>
-              )}
-            </>
-          )}
+            ))}
+          </div>
         </div>
-
         {/* Sockets / Auth / Notification Dropdown Controls */}
         <div className="hidden md:flex items-center space-x-4">
+          {/* Global Search Bar (from mock-up) */}
+          <div className="relative mr-4">
+            <Search className="w-4 h-4 text-slate-400 absolute left-3 top-1/2 -translate-y-1/2" />
+            <input type="text" placeholder="Search events..." className="bg-slate-800/50 border border-slate-700/50 text-sm text-white placeholder-slate-400 rounded-lg pl-9 pr-4 py-2 focus:outline-none focus:border-indigo-500 w-64" />
+          </div>
+
           {user ? (
             <div className="flex items-center space-x-4">
+              <Link to="/my-bookings" className="text-sm font-semibold text-slate-300 hover:text-white">My Bookings</Link>
+              {(user.role === 'organizer' || user.role === 'admin') && (
+                <Link to="/dashboard" className="text-sm font-semibold text-slate-300 hover:text-white">Dashboard</Link>
+              )}
+              {user.role === 'admin' && (
+                <Link to="/admin" className="text-sm font-semibold text-slate-300 hover:text-white">Admin</Link>
+              )}
               
               {/* Notification Bell */}
               <div className="relative">
@@ -137,12 +154,10 @@ const Navbar = () => {
 
             </div>
           ) : (
-            <div className="flex items-center space-x-3">
-              <Link to="/login" className="px-4 py-2 rounded-xl text-slate-300 hover:text-white transition-all font-semibold">
-                Sign In
-              </Link>
-              <Link to="/register" className="px-4 py-2 bg-teal-600 hover:bg-teal-500 rounded-xl text-white font-semibold transition-all shadow-lg shadow-teal-500/20 hover:scale-[1.02]">
-                Join Wave
+            <div className="flex items-center space-x-6">
+              <Link to="/login" className="text-sm text-slate-300 hover:text-white transition-colors font-semibold">Sign In</Link>
+              <Link to="/register" className="premium-btn py-2 text-sm">
+                Create Event
               </Link>
             </div>
           )}

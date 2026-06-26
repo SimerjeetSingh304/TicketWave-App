@@ -2,7 +2,7 @@ import Booking from '../models/Booking.js';
 import Event from '../models/Event.js';
 import Notification from '../models/Notification.js';
 import { lockSeat, releaseSeat, getSeatLockOwner } from '../services/redis.js';
-import { generateBookingQRCode } from '../services/qr.js';
+import { generateQRCode } from '../services/qr.js';
 import { emitSeatLocked, emitSeatReleased, emitSeatBooked, emitUserNotification } from '../services/socket.js';
 
 // @desc    Initiate Booking & Lock Seats
@@ -207,7 +207,7 @@ export const confirmBooking = async (req, res) => {
   await event.save();
 
   // 3. Generate QR code
-  const qrCodeBase64 = await generateBookingQRCode(booking._id);
+  const qrCodeBase64 = await generateQRCode(booking._id);
 
   // 4. Update Booking status to confirmed
   booking.status = 'confirmed';

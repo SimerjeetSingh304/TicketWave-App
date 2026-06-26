@@ -5,6 +5,7 @@ import api from '../services/api';
 import useDebounce from '../hooks/useDebounce';
 import EventCard from '../components/EventCard';
 import EventCardSkeleton from '../components/EventCardSkeleton';
+import Footer from '../components/Footer';
 import { Search, MapPin, Calendar, Compass, Sparkles, AlertCircle, X, ChevronDown } from 'lucide-react';
 
 const CATEGORIES = ['Concerts', 'Comedy', 'Theatre', 'Conferences', 'Sports'];
@@ -154,7 +155,7 @@ const Home = () => {
   });
 
   // Client-side pagination variables
-  const limit = 6;
+  const limit = 20; // Increased limit so events fit on 1 page
   const total = filteredEvents.length;
   const totalPages = Math.ceil(total / limit);
   const skip = (page - 1) * limit;
@@ -162,139 +163,83 @@ const Home = () => {
 
   const isFilterActive = selectedCity || selectedCategory || debouncedSearch || dateFilter;
 
+  // Split events for sections
+  const trendingEvents = allEvents.slice(0, 3);
+  const featuredEvent = allEvents.length > 0 ? allEvents[0] : null;
+
   return (
-    <div className="space-y-12">
+    <div className="w-full overflow-x-hidden flex flex-col min-h-screen">
       
-      {/* Hero Header Section */}
-      <div className="relative rounded-3xl overflow-hidden px-8 py-16 md:py-24 text-center border border-white/10 bg-white/[0.03] backdrop-blur-sm">
-        <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] from-teal-600/10 via-slate-950/0 to-slate-950/0 pointer-events-none"></div>
-        
-        <div className="relative z-10 max-w-3xl mx-auto space-y-6">
-          <div className="inline-flex items-center space-x-2 bg-teal-500/10 border border-teal-500/20 px-3 py-1 rounded-full text-teal-400 text-xs font-bold uppercase tracking-wider">
+      {/* Edge-to-Edge Luxury Hero Section */}
+      <div className="relative h-[85vh] min-h-[600px] w-full mt-[-80px] z-0 flex flex-col items-center justify-center">
+        <div className="absolute inset-0">
+          <img 
+            src="https://images.unsplash.com/photo-1470225620780-dba8ba36b745?auto=format&fit=crop&q=80" 
+            alt="Hero Background" 
+            className="w-full h-full object-cover" 
+          />
+          {/* Very dark gradient overlay to ensure text pops and matches the navy theme */}
+          <div className="absolute inset-0 bg-[#0b1120]/70"></div>
+          <div className="absolute inset-0 bg-gradient-to-t from-[#0b1120] via-transparent to-[#0b1120]/30"></div>
+        </div>
+
+        {/* Centered Hero Content */}
+        <div className="relative z-10 text-center px-6 max-w-4xl mx-auto space-y-6 animate-fade-in-up pt-16">
+          <div className="inline-flex items-center space-x-2 px-3 py-1 bg-white/5 border border-white/10 rounded-full text-xs font-black tracking-[0.2em] text-indigo-300 uppercase backdrop-blur-md">
             <Sparkles className="w-3.5 h-3.5" />
-            <span>Discover live experiences</span>
+            <span>Exclusive Access</span>
           </div>
           
-          <h1 className="text-4xl md:text-6xl font-black tracking-tight leading-none">
-            Your Gateway to <br />
-            <span className="bg-gradient-to-r from-teal-400 via-emerald-400 to-cyan-400 bg-clip-text text-transparent">Unforgettable Moments</span>
+          <h1 className="text-5xl md:text-7xl lg:text-8xl font-black text-white tracking-tight leading-[1.05]">
+            Experience The <br />
+            <span className="bg-clip-text text-transparent bg-gradient-to-r from-indigo-400 to-cyan-400">Extraordinary.</span>
           </h1>
           
-          <p className="text-slate-400 md:text-lg max-w-xl mx-auto">
-            Book tickets to the best concerts, stand-up comedy shows, sports games, and theater events happening in your city.
+          <p className="text-lg text-slate-300 max-w-2xl mx-auto font-medium leading-relaxed">
+            Secure authenticated tickets for the world's most anticipated tours, championships, and immersive performances.
           </p>
 
-          {/* Autocomplete Input & City dropdown container */}
-          <div className="flex flex-col md:flex-row items-stretch md:items-center bg-white/5 p-2 border border-white/10 rounded-2xl md:rounded-full shadow-2xl space-y-2 md:space-y-0 md:space-x-2 max-w-2xl mx-auto relative z-30">
-            
-            {/* Search Input Autocomplete */}
-            <div ref={searchContainerRef} className="flex-grow flex items-center px-3 relative">
-              <Search className="w-5 h-5 text-slate-500 mr-2.5 shrink-0" />
-              <input
-                type="text"
-                value={searchInput}
-                onChange={(e) => {
-                  setSearchInput(e.target.value);
-                  setShowSuggestions(true);
-                  setActiveSuggestionIdx(-1);
-                }}
-                onFocus={() => setShowSuggestions(true)}
-                onKeyDown={handleKeyDown}
-                placeholder="Search events, artists, comedy clubs..."
-                className="w-full bg-transparent text-sm text-slate-200 placeholder-slate-600 focus:outline-none py-2"
-              />
-              {searchInput && (
-                <button
-                  onClick={() => { setSearchInput(''); setShowSuggestions(false); }}
-                  className="text-slate-500 hover:text-white p-1 rounded-full hover:bg-white/10 transition-colors"
-                >
-                  <X className="w-4 h-4" />
-                </button>
-              )}
+          <div className="pt-8">
+            <a href="#explore" className="inline-flex items-center justify-center px-8 py-4 bg-white text-[#0b1120] font-bold text-sm rounded-full hover:bg-slate-200 transition-colors shadow-[0_0_40px_rgba(255,255,255,0.3)] hover:scale-105 duration-300">
+              Explore Events
+            </a>
+          </div>
+        </div>
 
-              {/* Autocomplete Dropdown List */}
-              {showSuggestions && searchInput && (
-                <div className="absolute left-0 right-0 top-full mt-3 bg-white/5 backdrop-blur-xl border border-white/10 rounded-2xl shadow-2xl overflow-hidden z-50 text-left">
-                  {suggestions.length === 0 ? (
-                    <div className="p-4 text-center text-slate-500 text-sm">
-                      No events found
-                    </div>
-                  ) : (
-                    <div className="max-h-60 overflow-y-auto">
-                      {suggestions.map((s, idx) => {
-                        const isActive = idx === activeSuggestionIdx;
-                        return (
-                          <div
-                            key={s._id}
-                            onClick={() => {
-                              navigate(`/event/${s._id}`);
-                              setShowSuggestions(false);
-                            }}
-                            onMouseEnter={() => setActiveSuggestionIdx(idx)}
-                            className={`px-4 py-3 border-b border-white/[0.06] last:border-b-0 cursor-pointer flex justify-between items-center transition-all ${
-                              isActive ? 'bg-white/10 text-white' : 'hover:bg-white/5'
-                            }`}
-                          >
-                            <div className="text-left max-w-[70%]">
-                              <p className="text-sm font-bold truncate leading-tight text-slate-100">
-                                {highlightMatch(s.title, searchInput)}
-                              </p>
-                              <span className="text-[10px] text-slate-500 mt-1 block uppercase tracking-wide capitalize">
-                                {s.venue}
-                              </span>
-                            </div>
-                            <div className="flex items-center space-x-2">
-                              <span className="px-2 py-0.5 bg-white/5 border border-white/10 rounded text-[9px] font-semibold text-slate-400 capitalize">
-                                {s.city}
-                              </span>
-                              <span className="px-2 py-0.5 bg-teal-600/10 border border-teal-500/20 text-[9px] font-bold text-teal-400 rounded-full uppercase">
-                                {s.category}
-                              </span>
-                            </div>
-                          </div>
-                        );
-                      })}
-                    </div>
-                  )}
-                </div>
-              )}
-            </div>
-
-            {/* City Dropdown Filter */}
-            <div className="border-t md:border-t-0 md:border-l border-white/10 my-1 md:my-0"></div>
+        {/* Floating Filter Bar */}
+        <div id="explore" className="absolute bottom-0 left-1/2 -translate-x-1/2 translate-y-1/2 w-full max-w-5xl px-6 z-30">
+          <div className="bg-[#1e293b]/80 backdrop-blur-2xl border border-white/10 rounded-3xl p-3 shadow-2xl flex flex-col md:flex-row items-center justify-between gap-3 relative">
             
-            <div ref={cityDropdownRef} className="relative flex items-center px-3 bg-white/5 py-1 rounded-xl">
-              <MapPin className="w-4 h-4 text-teal-400 mr-2 shrink-0" />
-              <button
+            {/* City Filter */}
+            <div ref={cityDropdownRef} className="relative flex-1 w-full group">
+              <button 
                 onClick={() => setCityDropdownOpen(!cityDropdownOpen)}
-                className="bg-transparent text-sm text-slate-300 focus:outline-none flex items-center justify-between py-1.5 w-full md:w-32 text-left font-semibold"
+                className="w-full flex items-center bg-white/5 hover:bg-white/10 border border-white/5 rounded-2xl px-5 py-4 transition-colors"
               >
-                <span>{selectedCity ? selectedCity.charAt(0).toUpperCase() + selectedCity.slice(1) : 'All Cities'}</span>
-                <ChevronDown className={`w-4 h-4 text-slate-500 ml-1 transition-transform ${cityDropdownOpen ? 'rotate-180' : ''}`} />
+                <MapPin className="w-5 h-5 text-indigo-400 mr-3" />
+                <div className="text-left flex-grow">
+                  <div className="text-[10px] text-slate-400 font-bold uppercase tracking-wider mb-0.5">Location</div>
+                  <div className="text-sm text-white font-semibold">{selectedCity ? selectedCity.charAt(0).toUpperCase() + selectedCity.slice(1) : 'Any City'}</div>
+                </div>
+                <ChevronDown className={`w-4 h-4 text-slate-500 transition-transform ${cityDropdownOpen ? 'rotate-180' : ''}`} />
               </button>
-
+              
               {cityDropdownOpen && (
-                <div className="absolute right-0 top-full mt-3 bg-white/5 backdrop-blur-xl border border-white/10 rounded-xl shadow-2xl overflow-hidden z-50 w-44">
-                  <div className="max-h-48 overflow-y-auto">
+                <div className="absolute left-0 right-0 top-full mt-2 bg-[#1e293b] border border-white/10 rounded-2xl overflow-hidden shadow-2xl z-50">
+                  <div className="max-h-60 overflow-y-auto">
                     <button
-                      onClick={() => handleCitySelect('')}
-                      className={`w-full text-left px-4 py-2.5 text-xs font-semibold hover:bg-white/10 transition-colors border-b border-white/[0.06] ${
-                        !selectedCity ? 'text-teal-400 bg-white/5' : 'text-slate-300'
-                      }`}
+                      onClick={() => { handleCitySelect(''); setCityDropdownOpen(false); }}
+                      className="w-full text-left px-5 py-3 text-sm font-semibold hover:bg-white/5 transition-colors text-slate-300 border-b border-white/5"
                     >
                       All Cities
                     </button>
-                    {availableCities.map((cityName) => (
+                    {availableCities.map(city => (
                       <button
-                        key={cityName}
-                        onClick={() => handleCitySelect(cityName)}
-                        className={`w-full text-left px-4 py-2.5 text-xs font-semibold hover:bg-white/10 transition-colors border-b border-white/[0.06] last:border-b-0 ${
-                          selectedCity.toLowerCase() === cityName.toLowerCase()
-                            ? 'text-teal-400 bg-white/5'
-                            : 'text-slate-300'
-                        }`}
+                        key={city}
+                        onClick={() => { handleCitySelect(city); setCityDropdownOpen(false); }}
+                        className="w-full text-left px-5 py-3 text-sm font-semibold hover:bg-white/5 transition-colors text-slate-300 border-b border-white/5 last:border-0"
                       >
-                        {cityName}
+                        {city}
                       </button>
                     ))}
                   </div>
@@ -302,129 +247,151 @@ const Home = () => {
               )}
             </div>
 
+            {/* Date Filter */}
+            <div className="relative flex-1 w-full group">
+              <div className="w-full flex items-center bg-white/5 hover:bg-white/10 border border-white/5 rounded-2xl px-5 py-4 transition-colors">
+                <Calendar className="w-5 h-5 text-teal-400 mr-3" />
+                <div className="text-left flex-grow">
+                  <div className="text-[10px] text-slate-400 font-bold uppercase tracking-wider mb-0.5">Date</div>
+                  <input
+                    type="date"
+                    value={dateFilter}
+                    onChange={(e) => { setDateFilter(e.target.value); setPage(1); }}
+                    className="bg-transparent focus:outline-none text-white text-sm font-semibold [&::-webkit-calendar-picker-indicator]:filter [&::-webkit-calendar-picker-indicator]:invert cursor-pointer w-full"
+                  />
+                </div>
+              </div>
+            </div>
+
+            {/* Search Input */}
+            <div className="relative flex-[1.5] w-full group">
+              <div className="w-full flex items-center bg-white/5 hover:bg-white/10 focus-within:bg-white/10 border border-white/5 focus-within:border-indigo-500/50 rounded-2xl px-5 py-4 transition-colors">
+                <Search className="w-5 h-5 text-slate-400 mr-3" />
+                <div className="text-left flex-grow">
+                  <div className="text-[10px] text-slate-400 font-bold uppercase tracking-wider mb-0.5">Search</div>
+                  <input
+                    type="text"
+                    value={searchInput}
+                    onChange={(e) => { setSearchInput(e.target.value); setShowSuggestions(true); }}
+                    onFocus={() => setShowSuggestions(true)}
+                    onKeyDown={handleKeyDown}
+                    placeholder="Search artist, event, or venue..."
+                    className="bg-transparent border-none focus:outline-none text-white placeholder-slate-500 text-sm font-semibold w-full"
+                  />
+                </div>
+              </div>
+
+              {/* Suggestions Dropdown */}
+              {showSuggestions && suggestions.length > 0 && (
+                <div className="absolute top-full left-0 right-0 mt-2 bg-[#1e293b] border border-white/10 rounded-2xl shadow-2xl overflow-hidden z-50">
+                  <ul className="py-2">
+                    {suggestions.map((event, idx) => (
+                      <li
+                        key={event._id}
+                        className={`px-4 py-3 cursor-pointer text-sm transition-colors flex items-center space-x-3 ${
+                          idx === activeSuggestionIdx ? 'bg-indigo-600/20 text-white' : 'text-slate-300 hover:bg-white/5 hover:text-white'
+                        }`}
+                        onMouseEnter={() => setActiveSuggestionIdx(idx)}
+                        onClick={() => navigate(`/event/${event._id}`)}
+                      >
+                        <div className="w-8 h-8 rounded bg-[#0f172a] shrink-0 overflow-hidden">
+                          <img src={event.bannerImage || "https://images.unsplash.com/photo-1540039155733-d7696d4eb98e?auto=format&fit=crop&q=60"} alt="" className="w-full h-full object-cover" />
+                        </div>
+                        <div className="flex flex-col">
+                          <span className="font-semibold">{highlightMatch(event.title, searchInput)}</span>
+                          <span className="text-[10px] text-slate-500 uppercase">{event.city}</span>
+                        </div>
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+              )}
+            </div>
+
           </div>
         </div>
       </div>
 
-      {/* Categories scroller & Date panel */}
-      <div className="flex flex-wrap items-center justify-between gap-4">
+      {/* Main Content Area */}
+      <div className="max-w-[1400px] mx-auto px-6 pt-32 pb-24 space-y-24 flex-grow">
         
-        {/* Categories filters */}
-        <div className="flex items-center space-x-2 overflow-x-auto pb-1 scrollbar-none w-full md:w-auto">
-          <button
-            onClick={() => handleCategorySelect('')}
-            className={`px-4 py-2 rounded-full text-xs font-semibold whitespace-nowrap transition-all border ${
-              selectedCategory === ''
-                ? 'bg-teal-600 border-teal-500 text-white shadow-md'
-                : 'bg-white/5 border-white/10 text-slate-400 hover:border-white/20 hover:text-slate-200'
-            }`}
-          >
-            All Categories
-          </button>
-          {CATEGORIES.map((cat) => (
-            <button
-              key={cat}
-              onClick={() => handleCategorySelect(cat)}
-              className={`px-4 py-2 rounded-full text-xs font-semibold whitespace-nowrap transition-all border ${
-                selectedCategory.toLowerCase() === cat.toLowerCase()
-                  ? 'bg-teal-600 border-teal-500 text-white shadow-md'
-                  : 'bg-white/5 border-white/10 text-slate-400 hover:border-white/20 hover:text-slate-200'
-              }`}
-            >
-              {cat}
-            </button>
-          ))}
-        </div>
 
-        {/* Date filter & Reset */}
-        <div className="flex items-center space-x-3 w-full md:w-auto justify-end">
-          <div className="flex items-center bg-white/5 border border-white/10 px-3.5 py-2 rounded-xl text-xs">
-            <Calendar className="w-4 h-4 text-slate-500 mr-2" />
-            <input
-              type="date"
-              value={dateFilter}
-              onChange={(e) => { setDateFilter(e.target.value); setPage(1); }}
-              className="bg-transparent focus:outline-none text-slate-300 cursor-pointer"
-            />
-          </div>
 
-          {isFilterActive && (
+        {/* Active Filters Display */}
+        {isFilterActive && (
+          <div className="flex items-center justify-between bg-white/5 border border-white/10 rounded-2xl p-4">
+            <div className="flex items-center space-x-2 text-sm text-slate-300">
+              <span className="font-semibold text-white">{filteredEvents.length}</span> results found
+            </div>
             <button
               onClick={handleResetAll}
-              className="text-xs text-rose-400 hover:text-rose-300 font-semibold hover:underline flex items-center space-x-1"
+              className="flex items-center text-xs font-bold text-rose-400 hover:text-rose-300 transition-colors"
             >
-              <X className="w-3.5 h-3.5" />
-              <span>Clear Filters</span>
+              <X className="w-3 h-3 mr-1" />
+              Clear Filters
             </button>
-          )}
-        </div>
-
-      </div>
-
-      {/* Skeletons Loading and Main Grid */}
-      {isLoading ? (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {[1, 2, 3, 4, 5, 6].map((i) => (
-            <EventCardSkeleton key={i} />
-          ))}
-        </div>
-      ) : isError ? (
-        <div className="flex items-center justify-center p-12 bg-white/5 border border-white/10 rounded-2xl">
-          <div className="text-center space-y-3">
-            <AlertCircle className="w-10 h-10 text-rose-500 mx-auto" />
-            <h3 className="font-bold text-lg text-slate-200">Failed to load events</h3>
-            <p className="text-sm text-slate-500">{error.message || 'Check database connection'}</p>
           </div>
-        </div>
-      ) : filteredEvents.length === 0 ? (
-        <div className="text-center py-20 bg-white/[0.03] border border-white/[0.06] rounded-3xl">
-          <Compass className="w-12 h-12 text-slate-600 mx-auto mb-4 animate-bounce" />
-          <h3 className="text-xl font-bold text-slate-300">No events found</h3>
-          <p className="text-sm text-slate-500 mt-1 max-w-xs mx-auto">
-            Try adjusting your search queries, clearing dates, or selecting another city filter.
-          </p>
-          {isFilterActive && (
-            <button
-              onClick={handleResetAll}
-              className="mt-6 px-4 py-2 text-xs font-semibold bg-white/5 hover:bg-white/10 border border-white/10 hover:border-white/20 rounded-xl transition-all"
-            >
-              Reset Filters
-            </button>
-          )}
-        </div>
-      ) : (
-        <div className="space-y-8">
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 animate-fade-in">
-            {paginatedEvents.map((event) => (
-              <EventCard key={event._id} event={event} />
-            ))}
-          </div>
+        )}
 
-          {/* Pagination Controls */}
-          {totalPages > 1 && (
-            <div className="flex items-center justify-center space-x-2 pt-6">
+        {/* Events Grid */}
+        <div className="space-y-12">
+          {isLoading ? (
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8">
+              {[...Array(6)].map((_, i) => (
+                <EventCardSkeleton key={i} />
+              ))}
+            </div>
+          ) : isError ? (
+            <div className="text-center py-20 bg-white/5 rounded-3xl border border-white/10">
+              <AlertCircle className="w-12 h-12 text-rose-500 mx-auto mb-4" />
+              <h3 className="text-xl font-bold text-white">Failed to load events</h3>
+              <p className="text-slate-400 text-sm mt-2">{error.message}</p>
+            </div>
+          ) : paginatedEvents.length === 0 ? (
+            <div className="text-center py-20 bg-white/5 rounded-3xl border border-white/10">
+              <Compass className="w-16 h-16 text-slate-700 mx-auto mb-4" />
+              <h3 className="text-2xl font-bold text-white mb-2">No events found</h3>
+              <p className="text-slate-400 max-w-md mx-auto text-sm">
+                We couldn't find any events matching your current filters. Try adjusting your search or exploring all categories.
+              </p>
               <button
-                onClick={() => setPage((p) => Math.max(1, p - 1))}
-                disabled={page === 1}
-                className="px-4 py-2 border border-white/10 bg-white/5 rounded-xl text-xs font-semibold disabled:opacity-30 disabled:pointer-events-none hover:bg-white/10 transition-all"
+                onClick={handleResetAll}
+                className="mt-6 px-6 py-2.5 bg-indigo-600 hover:bg-indigo-500 text-white font-bold rounded-xl transition-colors"
               >
-                Previous
-              </button>
-              <span className="text-xs text-slate-400 px-3 font-semibold">
-                Page {page} of {totalPages}
-              </span>
-              <button
-                onClick={() => setPage((p) => Math.min(totalPages, p + 1))}
-                disabled={page === totalPages}
-                className="px-4 py-2 border border-white/10 bg-white/5 rounded-xl text-xs font-semibold disabled:opacity-30 disabled:pointer-events-none hover:bg-white/10 transition-all"
-              >
-                Next
+                View All Events
               </button>
             </div>
+          ) : (
+            <>
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8">
+                {paginatedEvents.map((event) => (
+                  <EventCard key={event._id} event={event} />
+                ))}
+              </div>
+
+              {/* Minimal Pagination */}
+              {totalPages > 1 && (
+                <div className="flex items-center justify-center space-x-2 pt-8">
+                  {[...Array(totalPages)].map((_, i) => (
+                    <button
+                      key={i}
+                      onClick={() => setPage(i + 1)}
+                      className={`w-10 h-10 rounded-full flex items-center justify-center text-sm font-bold transition-colors ${
+                        page === i + 1
+                          ? 'bg-indigo-600 text-white'
+                          : 'bg-[#1e293b] text-slate-400 hover:text-white border border-white/5'
+                      }`}
+                    >
+                      {i + 1}
+                    </button>
+                  ))}
+                </div>
+              )}
+            </>
           )}
         </div>
-      )}
-
+      </div>
+      <Footer />
     </div>
   );
 };

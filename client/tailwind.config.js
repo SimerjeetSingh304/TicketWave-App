@@ -7,34 +7,29 @@ export default {
   theme: {
     extend: {
       colors: {
-        brand: {
-          50: '#f0fdfa',
-          100: '#ccfbf1',
-          200: '#99f6e4',
-          300: '#5eead4',
-          400: '#2dd4bf',
-          500: '#14b8a6', // Teal base
-          600: '#0d9488',
-          700: '#0f766e',
-          800: '#115e59',
-          900: '#134e4a',
-        },
         dark: {
-          50: '#f8fafc',
-          100: '#f1f5f9',
-          800: '#141420',
-          900: '#0c0c18',
-          950: '#080810', // Pitch dark - new base
+          950: '#060913',
+          900: '#0B0F19',
+          800: '#111827',
+          700: '#1F2937',
+          600: '#374151'
         },
-        background: {
-          DEFAULT: '#080810',
+        primary: {
+          400: '#818CF8',
+          500: '#6366F1',
+          600: '#4F46E5',
+          700: '#4338CA'
+        },
+        accent: {
+          violet: '#8B5CF6',
+          fuchsia: '#D946EF',
+          rose: '#F43F5E',
+          emerald: '#10B981'
         }
       },
       fontFamily: {
-        sans: ['Outfit', 'Inter', 'sans-serif'],
-      },
-      animation: {
-        'pulse-slow': 'pulse 3s cubic-bezier(0.4, 0, 0.6, 1) infinite',
+        sans: ['Inter', 'sans-serif'],
+        display: ['Outfit', 'sans-serif']
       }
     },
   },

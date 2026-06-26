@@ -1,25 +1,18 @@
 import QRCode from 'qrcode';
 
 /**
- * Generate a base64 encoded QR Code image representing the booking ID
- * @param {string} bookingId - The booking ID to encode
- * @returns {Promise<string>} Base64 image URL data
+ * Generates a QR Code as a base64 Data URL.
+ * @param {string} text - The content of the QR Code (e.g. Booking ID)
+ * @returns {Promise<string>} Base64 representation of the QR Code
  */
-export async function generateBookingQRCode(bookingId) {
+export const generateQRCode = async (text) => {
   try {
-    // Generate inline base64 QR Code string
-    const qrDataUrl = await QRCode.toDataURL(bookingId.toString(), {
-      errorCorrectionLevel: 'M',
-      margin: 2,
-      width: 250,
-      color: {
-        dark: '#1e1b4b', // Deep indigo
-        light: '#ffffff'
-      }
-    });
-    return qrDataUrl;
+    const dataUrl = await QRCode.toDataURL(text.toString());
+    return dataUrl;
   } catch (error) {
-    console.error('[QR Service Error] Failed to generate QR Code:', error.message);
-    throw new Error('QR Code generation failed');
+    console.error('[QR Generator] Error:', error.message);
+    throw error;
   }
-}
+};
+
+export default generateQRCode;

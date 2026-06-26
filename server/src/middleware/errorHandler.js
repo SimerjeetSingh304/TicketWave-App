@@ -1,41 +1,34 @@
-export function errorHandler(err, req, res, next) {
-  console.error(`[Error Handler] ${err.name}: ${err.message}\n`, err.stack);
+export const errorHandler = (err, req, res, next) => {
+  console.error('\x1b[31m[Global Error Handler]\x1b[0m', err);
 
-  let statusCode = err.statusCode || 500;
-  let message = err.message || 'Internal Server Error';
-
-  // Handle Mongoose CastError (invalid ObjectId)
-  if (err.name === 'CastError') {
-    statusCode = 400;
-    message = `Resource not found with id of ${err.value}`;
-  }
-
-  // Handle Mongoose ValidationError
-  if (err.name === 'ValidationError') {
-    statusCode = 400;
-    message = Object.values(err.errors).map(val => val.message).join(', ');
-  }
-
-  // Handle Mongoose duplicate key error (11000)
+  // Handle specific MongoDB/Mongoose duplicate key error
   if (err.code === 11000) {
-    statusCode = 400;
-    message = `Duplicate field value entered: ${Object.keys(err.keyValue).join(', ')}`;
+    const field = Object.keys(err.keyValue)[0];
+    return res.status(409).json({
+      success: false,
+      message: `User with this ${field} already exists`
+    });
   }
 
-  // JWT Errors
-  if (err.name === 'JsonWebTokenError') {
-    statusCode = 401;
-    message = 'Invalid token. Please log in again.';
+  // Handle Mongoose Validation Error
+  if (err.name === 'ValidationError') {
+    const messages = Object.values(err.errors).map((val) => val.message);
+    return res.status(400).json({
+      success: false,
+      message: 'Validation failed',
+      errors: messages
+    });
   }
 
-  if (err.name === 'TokenExpiredError') {
-    statusCode = 401;
-    message = 'Token expired. Please log in again.';
-  }
+  // Handle custom status errors or default to 500 Internal Server Error
+  const statusCode = err.status || err.statusCode || 500;
+  const message = err.message || 'An internal server error occurred';
 
   res.status(statusCode).json({
     success: false,
-    data: null,
-    message
+    message,
+    stack: process.env.NODE_ENV === 'development' ? err.stack : undefined
   });
-}
+};
+
+export default errorHandler;

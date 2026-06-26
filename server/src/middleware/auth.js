@@ -1,107 +1,88 @@
 import jwt from 'jsonwebtoken';
+import env from '../config/env.js';
 import User from '../models/User.js';
 
-// Protect routes - Verify JWT Access Token
+// Access Token TTL: 15 minutes
+export const generateAccessToken = (user) => {
+  return jwt.sign(
+    { id: user._id, email: user.email, role: user.role },
+    env.jwtSecret,
+    { expiresIn: '15m' }
+  );
+};
+
+// Refresh Token TTL: 7 days
+export const generateRefreshToken = (user) => {
+  return jwt.sign(
+    { id: user._id },
+    env.jwtRefreshSecret,
+    { expiresIn: '7d' }
+  );
+};
+
+export const sendRefreshTokenCookie = (res, token) => {
+  res.cookie('refreshToken', token, {
+    httpOnly: true,
+    secure: process.env.NODE_ENV === 'production',
+    sameSite: 'strict',
+    maxAge: 7 * 24 * 60 * 60 * 1000 // 7 days
+  });
+};
+
+// Middleware to verify short-lived access JWT
 export const authMiddleware = async (req, res, next) => {
-  let token;
-
-  // Check Authorization header for Bearer token
-  if (
-    req.headers.authorization &&
-    req.headers.authorization.startsWith('Bearer')
-  ) {
-    token = req.headers.authorization.split(' ')[1];
-  }
-
-  if (!token) {
-    return res.status(401).json({
-      success: false,
-      data: null,
-      message: 'Not authorized to access this route. Token missing.'
-    });
-  }
-
   try {
-    // Verify token
-    const decoded = jwt.verify(token, process.env.JWT_SECRET);
+    const authHeader = req.headers.authorization;
+    if (!authHeader || !authHeader.startsWith('Bearer ')) {
+      return res.status(401).json({
+        success: false,
+        message: 'Authorization header is missing or format is invalid'
+      });
+    }
 
-    // Attach user to req.user (excluding password)
+    const token = authHeader.split(' ')[1];
+    const decoded = jwt.verify(token, env.jwtSecret);
+
     const user = await User.findById(decoded.id).select('-password');
     if (!user) {
       return res.status(401).json({
         success: false,
-        data: null,
-        message: 'User belonging to this token no longer exists.'
+        message: 'User no longer exists in database'
       });
     }
 
     req.user = user;
     next();
   } catch (error) {
-    console.error('[Auth Middleware Error] JWT verification failed:', error.message);
-    
-    // Distinguish between expired and invalid
-    const message = error.name === 'TokenExpiredError' 
-      ? 'Access token expired. Please refresh your token.' 
-      : 'Not authorized to access this route. Token invalid.';
-
+    if (error.name === 'TokenExpiredError') {
+      return res.status(401).json({
+        success: false,
+        message: 'Token expired',
+        code: 'TOKEN_EXPIRED'
+      });
+    }
     return res.status(401).json({
       success: false,
-      data: null,
-      message
+      message: 'Invalid authorization token'
     });
   }
 };
 
-// Role authorization check (RBAC)
+// Role-Based Access Control (RBAC) middleware
 export const checkRole = (...roles) => {
   return (req, res, next) => {
     if (!req.user) {
       return res.status(401).json({
         success: false,
-        data: null,
-        message: 'User authentication required'
+        message: 'Authentication is required'
       });
     }
-
     if (!roles.includes(req.user.role)) {
       return res.status(403).json({
         success: false,
-        data: null,
-        message: `Forbidden: User role '${req.user.role}' is not authorized to access this resource`
+        message: 'Forbidden: Insufficient privileges'
       });
     }
-
     next();
   };
-};
-
-// Generate JWT Access Token (expires in 15m)
-export const generateAccessToken = (user) => {
-  return jwt.sign(
-    { id: user._id, role: user.role, email: user.email, name: user.name },
-    process.env.JWT_SECRET,
-    { expiresIn: '15m' }
-  );
-};
-
-// Generate JWT Refresh Token (expires in 7d)
-export const generateRefreshToken = (user) => {
-  return jwt.sign(
-    { id: user._id },
-    process.env.JWT_REFRESH_SECRET,
-    { expiresIn: '7d' }
-  );
-};
-
-// Helper to set httpOnly cookie for Refresh Token
-export const sendRefreshTokenCookie = (res, token) => {
-  const cookieOptions = {
-    httpOnly: true,
-    expires: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000), // 7 days
-    secure: process.env.NODE_ENV === 'production', // true in production
-    sameSite: 'strict',
-    path: '/'
-  };
-  res.cookie('refreshToken', token, cookieOptions);
 };

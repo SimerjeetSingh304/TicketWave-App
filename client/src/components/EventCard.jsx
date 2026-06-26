@@ -1,6 +1,6 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
-import { MapPin, ArrowRight } from 'lucide-react';
+import { MapPin, Ticket } from 'lucide-react';
 import ImageWithFallback from './ImageWithFallback';
 
 const EventCard = ({ event }) => {
@@ -27,95 +27,74 @@ const EventCard = ({ event }) => {
   const isSoldOut = availableSeats === 0;
 
   return (
-    <div
-      className={`group bg-white/5 border border-white/10 rounded-3xl overflow-hidden shadow-lg hover:border-teal-500/40 hover:shadow-teal-500/5 transition-all duration-300 flex flex-col ${
-        isSoldOut ? 'opacity-60' : ''
+    <Link
+      to={`/event/${event._id}`}
+      className={`group block relative rounded-[2rem] overflow-hidden bg-[#0f172a] transition-all duration-500 hover:shadow-[0_0_40px_rgba(79,70,229,0.2)] ${
+        isSoldOut ? 'opacity-70 grayscale-[30%]' : ''
       }`}
     >
-      
-      {/* Banner Image Container */}
-      <div className="relative aspect-[16/10] overflow-hidden">
+      {/* Edge-to-Edge Banner Image */}
+      <div className="relative aspect-[4/5] md:aspect-[3/4] w-full overflow-hidden">
         <ImageWithFallback
           src={event.bannerImage}
           alt={event.title}
-          className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+          className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700 ease-in-out"
           category={event.category}
         />
         
-        {/* Category Badge */}
-        <div className="absolute top-4 left-4 bg-white/5 backdrop-blur-sm px-3 py-1 rounded-full text-[10px] font-bold text-cyan-300 tracking-wide uppercase border border-white/10">
-          {event.category}
-        </div>
-
-        {/* Sold Out Overlay */}
-        {isSoldOut && (
-          <div className="absolute inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center">
-            <span className="text-white font-extrabold text-sm uppercase tracking-widest border border-white/20 px-4 py-2 rounded-xl">
-              SOLD OUT
-            </span>
-          </div>
-        )}
-
-        {/* Capacity status badges */}
-        {!isSoldOut && (
-          <>
-            {availableSeats <= 20 ? (
-              <div className="absolute bottom-4 left-4 bg-rose-500/90 backdrop-blur-sm px-3 py-1.5 rounded-xl text-[10px] font-black text-white tracking-wide uppercase shadow-lg shadow-rose-500/20 border border-rose-400/20 animate-pulse">
-                Only {availableSeats} left!
-              </div>
-            ) : seatsLeft <= 50 ? (
-              <div className="absolute bottom-4 left-4 bg-amber-500/90 backdrop-blur-sm px-3 py-1.5 rounded-xl text-[10px] font-black text-white tracking-wide uppercase shadow-lg shadow-amber-500/20 border border-amber-400/20">
-                Filling fast
-              </div>
-            ) : null}
-          </>
-        )}
-      </div>
-
-      {/* Body Content */}
-      <div className="p-6 flex-grow flex flex-col justify-between space-y-4">
-        <div className="space-y-2">
-          <div className="flex items-center text-xs text-slate-500 space-x-1">
-            <MapPin className="w-3.5 h-3.5 text-teal-400" />
-            <span className="capitalize">{event.venue}, {event.city}</span>
+        {/* Gradient Overlays */}
+        <div className="absolute inset-0 bg-gradient-to-t from-[#0b1120] via-[#0b1120]/40 to-transparent opacity-80 group-hover:opacity-90 transition-opacity duration-500"></div>
+        <div className="absolute inset-0 bg-gradient-to-tr from-indigo-500/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
+        
+        {/* Top Badges */}
+        <div className="absolute top-5 flex items-center justify-between w-full px-5">
+          <div className="bg-white/10 backdrop-blur-md px-3 py-1.5 rounded-full text-[10px] font-bold text-white tracking-widest uppercase border border-white/20">
+            {event.category}
           </div>
           
-          <h3 className="font-extrabold text-lg text-slate-100 group-hover:text-teal-400 transition-colors leading-tight">
-            {event.title}
-          </h3>
-
-          <p className="text-xs text-slate-400 line-clamp-2 leading-relaxed">
-            {event.description}
-          </p>
+          {isSoldOut ? (
+            <div className="bg-rose-500/80 backdrop-blur-md px-3 py-1.5 rounded-full text-[10px] font-bold text-white tracking-widest uppercase border border-rose-500/20">
+              Sold Out
+            </div>
+          ) : availableSeats <= 20 ? (
+            <div className="bg-amber-500/80 backdrop-blur-md px-3 py-1.5 rounded-full text-[10px] font-bold text-white tracking-widest uppercase border border-amber-500/20 flex items-center">
+              <span className="w-1.5 h-1.5 rounded-full bg-white mr-1.5 animate-pulse"></span>
+              {availableSeats} Left
+            </div>
+          ) : null}
         </div>
 
-        {/* Pricing & CTA */}
-        <div className="pt-4 border-t border-slate-800/80 flex items-center justify-between">
-          <div>
-            <span className="text-[10px] text-slate-500 block uppercase font-bold tracking-wide">Starting from</span>
-            <span className="text-lg font-black text-slate-100">₹{minPrice}</span>
+        {/* Content Box at the Bottom */}
+        <div className="absolute bottom-0 w-full p-6 flex flex-col justify-end">
+          <div className="flex flex-col space-y-1 mb-4 transform translate-y-2 group-hover:translate-y-0 transition-transform duration-500">
+            <span className="text-xs font-semibold text-indigo-300 tracking-wider uppercase mb-1">
+              {dateStr}
+            </span>
+            <h3 className="font-black text-2xl md:text-3xl text-white leading-tight">
+              {event.title}
+            </h3>
+            <div className="flex items-center text-sm font-medium text-slate-300 mt-2">
+              <MapPin className="w-4 h-4 mr-1 text-slate-400" />
+              <span className="truncate">{event.venue}, {event.city}</span>
+            </div>
           </div>
 
-          {isSoldOut ? (
-            <button
-              disabled
-              className="px-4 py-2 bg-slate-800 text-slate-500 rounded-xl text-xs font-bold cursor-not-allowed border border-slate-700/30"
-            >
-              Sold Out
-            </button>
-          ) : (
-            <Link
-              to={`/event/${event._id}`}
-              className="px-4 py-2 bg-slate-800 group-hover:bg-teal-600 text-slate-200 group-hover:text-white rounded-xl text-xs font-bold transition-all flex items-center space-x-1"
-            >
-              <span>Book Now</span>
-              <ArrowRight className="w-3.5 h-3.5" />
-            </Link>
-          )}
+          {/* Price & Action row hidden by default, shown on hover */}
+          <div className="flex items-center justify-between pt-4 border-t border-white/10 opacity-0 transform translate-y-4 group-hover:opacity-100 group-hover:translate-y-0 transition-all duration-500 ease-out delay-100">
+            <div>
+              <span className="text-[10px] text-slate-400 uppercase tracking-widest font-bold">Starting At</span>
+              <div className="text-lg font-black text-white">${minPrice.toFixed(2)}</div>
+            </div>
+            
+            {!isSoldOut && (
+              <div className="w-10 h-10 rounded-full bg-indigo-500 flex items-center justify-center text-white transform group-hover:scale-110 transition-transform duration-300 shadow-[0_0_20px_rgba(79,70,229,0.4)]">
+                <Ticket className="w-4 h-4" />
+              </div>
+            )}
+          </div>
         </div>
       </div>
-
-    </div>
+    </Link>
   );
 };
 

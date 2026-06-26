@@ -53,144 +53,150 @@ const Auth = ({ isLoginMode }) => {
   };
 
   return (
-    <div className="flex items-center justify-center min-h-[80vh] px-4">
-      <div className="w-full max-w-md bg-white/5 border border-white/10 rounded-3xl p-8 shadow-2xl relative overflow-hidden">
+    <div className="w-full min-h-screen flex items-center justify-center -mt-20"> {/* Negative margin to offset navbar if needed, or just let it sit full screen */}
+      <div className="w-full h-screen flex flex-col lg:flex-row bg-[#0b1120]">
         
-        {/* Glow details */}
-        <div className="absolute top-0 left-1/2 -translate-x-1/2 w-48 h-1 bg-gradient-to-r from-teal-400 to-cyan-400 rounded-full blur-sm"></div>
+        {/* Left Side: Immersive Image */}
+        <div className="relative hidden lg:flex flex-1 items-center justify-center overflow-hidden">
+          <img 
+            src="https://images.unsplash.com/photo-1516450360452-9312f5e86fc7?auto=format&fit=crop&q=80" 
+            alt="Concert Crowd" 
+            className="absolute inset-0 w-full h-full object-cover opacity-60"
+          />
+          <div className="absolute inset-0 bg-gradient-to-r from-[#0b1120]/40 to-[#0b1120]"></div>
+          <div className="relative z-10 max-w-lg px-12 animate-fade-in-up">
+            <h1 className="text-5xl font-black text-white mb-6 leading-tight tracking-tight">
+              Your Front Row Seat To <br />
+              <span className="bg-clip-text text-transparent bg-gradient-to-r from-indigo-400 to-cyan-400">Eternal Moments.</span>
+            </h1>
+            <p className="text-lg text-slate-300 font-medium">
+              Join the world's most exclusive event platform. Secure, authenticated, and seamless.
+            </p>
+          </div>
+        </div>
 
-        <div className="text-center mb-8">
-          <h2 className="text-3xl font-extrabold tracking-tight">
-            {isLogin ? (
-              <span className="bg-gradient-to-r from-teal-400 to-cyan-400 bg-clip-text text-transparent">Welcome Back</span>
-            ) : (
-              <span className="bg-gradient-to-r from-teal-400 to-cyan-400 bg-clip-text text-transparent">Create Account</span>
+        {/* Right Side: Form */}
+        <div className="flex-1 flex items-center justify-center px-6 lg:px-20 py-24 relative overflow-y-auto">
+          {/* subtle background glow */}
+          <div className="absolute top-1/4 left-1/4 w-96 h-96 bg-indigo-600/10 rounded-full blur-[100px] pointer-events-none"></div>
+
+          <div className="w-full max-w-md relative z-10 flex flex-col h-full justify-center">
+            
+            <div className="mb-12">
+              <h2 className="text-3xl md:text-4xl font-normal text-white mb-3">
+                {isLogin ? 'Sign in' : 'Create an account'}
+              </h2>
+              <p className="text-slate-400 font-light text-sm">
+                {isLogin ? 'Enter your details to proceed.' : 'Join StellarEvents for exclusive access.'}
+              </p>
+            </div>
+
+            {error && (
+              <div className="flex items-start space-x-3 bg-rose-500/10 border-l-2 border-rose-500 text-rose-400 p-4 text-sm mb-8">
+                <ShieldAlert className="w-5 h-5 shrink-0 opacity-80" />
+                <span className="font-medium">{error}</span>
+              </div>
             )}
-          </h2>
-          <p className="text-slate-400 text-sm mt-2">
-            {isLogin ? 'Enter details to log in to your account' : 'Register to unlock booking events'}
-          </p>
-        </div>
 
-        {error && (
-          <div className="flex items-start space-x-2.5 bg-rose-500/10 border border-rose-500/20 text-rose-300 p-4 rounded-xl text-xs mb-6 animate-pulse-slow">
-            <ShieldAlert className="w-4.5 h-4.5 shrink-0" />
-            <span>{error}</span>
-          </div>
-        )}
+            <form onSubmit={handleSubmit} className="space-y-8">
+              {!isLogin && (
+                <div className="relative group">
+                  <input
+                    type="text"
+                    required
+                    value={name}
+                    onChange={(e) => setName(e.target.value)}
+                    placeholder="Full Name"
+                    className="w-full bg-transparent border-b border-white/20 pb-3 text-white placeholder-slate-500 focus:border-indigo-400 focus:outline-none transition-colors peer"
+                  />
+                  <div className="absolute left-0 bottom-0 w-full h-[1px] bg-indigo-500 scale-x-0 peer-focus:scale-x-100 transition-transform origin-left duration-300"></div>
+                </div>
+              )}
 
-        <form onSubmit={handleSubmit} className="space-y-5">
-          {!isLogin && (
-            <div className="space-y-2">
-              <label className="text-xs text-slate-400 font-semibold tracking-wide uppercase">Full Name</label>
-              <div className="relative">
-                <span className="absolute inset-y-0 left-0 pl-3.5 flex items-center text-slate-500">
-                  <UserIcon className="w-4 h-4" />
-                </span>
+              <div className="relative group">
                 <input
-                  type="text"
+                  type="email"
                   required
-                  value={name}
-                  onChange={(e) => setName(e.target.value)}
-                  placeholder="e.g. John Doe"
-                  className="w-full pl-10 pr-4 py-3 bg-white/5 border border-white/10 rounded-xl focus:border-teal-500 focus:outline-none focus:ring-1 focus:ring-teal-500 text-sm text-slate-100 placeholder-slate-600 transition-all"
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                  placeholder="Email address"
+                  className="w-full bg-transparent border-b border-white/20 pb-3 text-white placeholder-slate-500 focus:border-indigo-400 focus:outline-none transition-colors peer"
                 />
+                <div className="absolute left-0 bottom-0 w-full h-[1px] bg-indigo-500 scale-x-0 peer-focus:scale-x-100 transition-transform origin-left duration-300"></div>
               </div>
-            </div>
-          )}
 
-          <div className="space-y-2">
-            <label className="text-xs text-slate-400 font-semibold tracking-wide uppercase">Email Address</label>
-            <div className="relative">
-              <span className="absolute inset-y-0 left-0 pl-3.5 flex items-center text-slate-500">
-                <Mail className="w-4 h-4" />
-              </span>
-              <input
-                type="email"
-                required
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                placeholder="e.g. john@example.com"
-                className="w-full pl-10 pr-4 py-3 bg-white/5 border border-white/10 rounded-xl focus:border-teal-500 focus:outline-none focus:ring-1 focus:ring-teal-500 text-sm text-slate-100 placeholder-slate-600 transition-all"
-              />
-            </div>
-          </div>
-
-          <div className="space-y-2">
-            <label className="text-xs text-slate-400 font-semibold tracking-wide uppercase">Password</label>
-            <div className="relative">
-              <span className="absolute inset-y-0 left-0 pl-3.5 flex items-center text-slate-500">
-                <Lock className="w-4 h-4" />
-              </span>
-              <input
-                type="password"
-                required
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                placeholder="••••••••"
-                className="w-full pl-10 pr-4 py-3 bg-white/5 border border-white/10 rounded-xl focus:border-teal-500 focus:outline-none focus:ring-1 focus:ring-teal-500 text-sm text-slate-100 placeholder-slate-600 transition-all"
-              />
-            </div>
-          </div>
-
-          {!isLogin && (
-            <div className="space-y-2">
-              <label className="text-xs text-slate-400 font-semibold tracking-wide uppercase block">Register As</label>
-              <div className="grid grid-cols-2 gap-3 pt-1">
-                <button
-                  type="button"
-                  onClick={() => setRole('user')}
-                  className={`py-3 rounded-xl border text-sm font-semibold transition-all ${
-                    role === 'user'
-                      ? 'border-teal-500 bg-teal-500/10 text-white'
-                      : 'border-white/10 bg-white/5 text-slate-400 hover:border-white/20 hover:text-slate-200'
-                  }`}
-                >
-                  General Attendee
-                </button>
-                <button
-                  type="button"
-                  onClick={() => setRole('organizer')}
-                  className={`py-3 rounded-xl border text-sm font-semibold transition-all ${
-                    role === 'organizer'
-                      ? 'border-teal-500 bg-teal-500/10 text-white'
-                      : 'border-white/10 bg-white/5 text-slate-400 hover:border-white/20 hover:text-slate-200'
-                  }`}
-                >
-                  Event Organizer
-                </button>
+              <div className="relative group">
+                <input
+                  type="password"
+                  required
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                  placeholder="Password"
+                  className="w-full bg-transparent border-b border-white/20 pb-3 text-white placeholder-slate-500 focus:border-indigo-400 focus:outline-none transition-colors peer"
+                />
+                <div className="absolute left-0 bottom-0 w-full h-[1px] bg-indigo-500 scale-x-0 peer-focus:scale-x-100 transition-transform origin-left duration-300"></div>
               </div>
+
+              {!isLogin && (
+                <div className="pt-2">
+                  <span className="text-xs text-slate-500 mb-4 block">Select Account Type</span>
+                  <div className="grid grid-cols-2 gap-4">
+                    <button
+                      type="button"
+                      onClick={() => setRole('user')}
+                      className={`py-3 text-sm font-medium transition-all border-b-2 ${
+                        role === 'user'
+                          ? 'border-indigo-500 text-white bg-white/5'
+                          : 'border-transparent text-slate-500 hover:text-slate-300 hover:bg-white/[0.02]'
+                      }`}
+                    >
+                      Attendee
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => setRole('organizer')}
+                      className={`py-3 text-sm font-medium transition-all border-b-2 ${
+                        role === 'organizer'
+                          ? 'border-indigo-500 text-white bg-white/5'
+                          : 'border-transparent text-slate-500 hover:text-slate-300 hover:bg-white/[0.02]'
+                      }`}
+                    >
+                      Organizer
+                    </button>
+                  </div>
+                </div>
+              )}
+
+              <button
+                type="submit"
+                disabled={submitting}
+                className="w-full py-4 mt-8 bg-white text-[#0b1120] hover:bg-slate-200 font-semibold text-sm rounded-full flex items-center justify-center space-x-2 transition-all duration-300 active:scale-95 disabled:opacity-50 disabled:pointer-events-none"
+              >
+                <span>{submitting ? 'Please wait...' : 'Continue'}</span>
+                {!submitting && <ArrowRight className="w-4 h-4 opacity-70" />}
+              </button>
+            </form>
+
+            <div className="mt-12 text-sm text-slate-500">
+              {isLogin ? (
+                <p>
+                  New here?{' '}
+                  <Link to="/register" className="text-white hover:text-indigo-300 transition-colors">
+                    Create an account
+                  </Link>
+                </p>
+              ) : (
+                <p>
+                  Already registered?{' '}
+                  <Link to="/login" className="text-white hover:text-indigo-300 transition-colors">
+                    Sign in
+                  </Link>
+                </p>
+              )}
             </div>
-          )}
 
-          <button
-            type="submit"
-            disabled={submitting}
-            className="w-full py-3.5 mt-4 bg-gradient-to-r from-teal-500 to-cyan-500 hover:from-teal-400 hover:to-cyan-400 text-white font-bold rounded-xl shadow-lg shadow-teal-500/10 flex items-center justify-center space-x-2 transition-all duration-200 hover:scale-[1.01] disabled:opacity-50 disabled:pointer-events-none"
-          >
-            <span>{submitting ? 'Authenticating...' : isLogin ? 'Sign In' : 'Create Account'}</span>
-            {!submitting && (isLogin ? <LogIn className="w-4 h-4" /> : <UserPlus className="w-4 h-4" />)}
-          </button>
-        </form>
-
-        <div className="text-center mt-6 text-sm text-slate-500">
-          {isLogin ? (
-            <>
-              Don't have an account?{' '}
-              <Link to="/register" className="text-teal-400 hover:text-teal-300 font-semibold hover:underline">
-                Create account
-              </Link>
-            </>
-          ) : (
-            <>
-              Already have an account?{' '}
-              <Link to="/login" className="text-teal-400 hover:text-teal-300 font-semibold hover:underline">
-                Sign in
-              </Link>
-            </>
-          )}
+          </div>
         </div>
-
       </div>
     </div>
   );

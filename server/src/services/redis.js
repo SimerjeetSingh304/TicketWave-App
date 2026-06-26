@@ -1,146 +1,148 @@
 import Redis from 'ioredis';
-
-class InMemoryRedis {
-  constructor() {
-    this.store = new Map();
-    console.log('[Redis Fallback] Initialized in-memory lock store.');
-  }
-
-  async set(key, value, mode, duration, flag) {
-    this.cleanupExpired();
-
-    if (flag === 'NX') {
-      if (this.store.has(key)) {
-        return null; // Key already exists (lock active)
-      }
-      
-      const expiresAt = Date.now() + (parseInt(duration, 10) * 1000);
-      this.store.set(key, { value, expiresAt });
-      return 'OK';
-    }
-
-    // Default SET (no NX)
-    const expiresAt = duration ? Date.now() + (parseInt(duration, 10) * 1000) : null;
-    this.store.set(key, { value, expiresAt });
-    return 'OK';
-  }
-
-  async del(key) {
-    const deleted = this.store.delete(key);
-    return deleted ? 1 : 0;
-  }
-
-  async get(key) {
-    this.cleanupExpired();
-    if (!this.store.has(key)) return null;
-    return this.store.get(key).value;
-  }
-
-  cleanupExpired() {
-    const now = Date.now();
-    for (const [key, record] of this.store.entries()) {
-      if (record.expiresAt && record.expiresAt < now) {
-        this.store.delete(key);
-      }
-    }
-  }
-
-  // To mimic ioredis API
-  on(event, handler) {
-    // dummy listener
-  }
-}
+import env from '../config/env.js';
 
 let redisClient;
 
-const redisUrl = process.env.REDIS_URL || 'redis://127.0.0.1:6379';
+try {
+  redisClient = new Redis(env.redisUrl, {
+    maxRetriesPerRequest: 3,
+    lazyConnect: true,
+    retryStrategy(times) {
+      const delay = Math.min(times * 100, 2000);
+      return delay;
+    }
+  });
 
-if (process.env.NODE_ENV === 'test') {
-  redisClient = new InMemoryRedis();
-} else {
-  try {
-    console.log(`[Redis] Connecting to Redis at ${redisUrl}...`);
-    redisClient = new Redis(redisUrl, {
-      maxRetriesPerRequest: 1,
-      connectTimeout: 2000,
-      retryStrategy(times) {
-        // If it fails to connect once, stop retrying and trigger error to fallback
-        if (times >= 1) {
-          console.warn('[Redis] Connection failed. Switching to In-Memory Fallback.');
-          return null; 
-        }
-        return 100;
-      }
-    });
+  redisClient.on('connect', () => {
+    console.log('\x1b[32m[Redis] Client Connected\x1b[0m');
+  });
 
-    redisClient.on('error', (err) => {
-      if (!(redisClient instanceof InMemoryRedis)) {
-        console.error('[Redis Error] Connection failed. Falling back to in-memory store.');
-        redisClient = new InMemoryRedis();
-      }
-    });
-  } catch (error) {
-    console.error('[Redis Init Error] Falling back to in-memory store:', error.message);
-    redisClient = new InMemoryRedis();
-  }
+  redisClient.on('error', (err) => {
+    console.error('\x1b[31m[Redis] Client Error:\x1b[0m', err.message);
+  });
+
+  redisClient.connect().catch(err => {
+    console.error('\x1b[31m[Redis] Connection failed at boot:\x1b[0m', err.message);
+  });
+} catch (error) {
+  console.error('\x1b[31m[Redis] Initialization Error:\x1b[0m', error.message);
 }
 
-// Seat Lock Helper Functions
-export const lockSeat = async (eventId, section, seatNumber, userId, ttl = 600) => {
-  const key = `seat:${eventId}:${section}:${seatNumber}`;
-  
-  // If the lock is already held by the same user, overwrite/extend it (without NX)
-  const currentOwner = await getSeatLockOwner(eventId, section, seatNumber);
-  if (currentOwner && currentOwner.toString() === userId.toString()) {
-    const res = await redisClient.set(key, userId, 'EX', ttl);
-    return res === 'OK';
+/**
+ * Attempts to lock a set of seats for a specific event and user.
+ * Atomic check-and-set: if any seat is already locked, roll back other locks.
+ * @param {string} eventId 
+ * @param {Array<{section: string, seatNumber: number}>} seats 
+ * @param {string} userId 
+ * @returns {Promise<{success: boolean, conflictKey?: string}>}
+ */
+export const lockSeats = async (eventId, seats, userId) => {
+  const lockedKeys = [];
+  try {
+    for (const seat of seats) {
+      const lockKey = `seat:${eventId}:${seat.section}:${seat.seatNumber}`;
+      // EX 600 NX: Expire in 10 minutes (600s), set ONLY if key does not exist
+      const result = await redisClient.set(lockKey, userId, 'EX', 600, 'NX');
+      
+      if (result !== 'OK') {
+        // Rollback already acquired locks in this attempt
+        if (lockedKeys.length > 0) {
+          await redisClient.del(lockedKeys);
+        }
+        return { success: false, conflictKey: lockKey };
+      }
+      lockedKeys.push(lockKey);
+    }
+    return { success: true };
+  } catch (error) {
+    if (lockedKeys.length > 0) {
+      try {
+        await redisClient.del(lockedKeys);
+      } catch (delErr) {
+        console.error('[Redis Lock Rollback Error]', delErr.message);
+      }
+    }
+    throw error;
   }
-  
-  const res = await redisClient.set(key, userId, 'EX', ttl, 'NX');
-  return res === 'OK';
+};
+
+/**
+ * Releases locks for a set of seats.
+ * @param {string} eventId 
+ * @param {Array<{section: string, seatNumber: number}>} seats 
+ */
+export const releaseSeats = async (eventId, seats) => {
+  try {
+    const keys = seats.map(seat => `seat:${eventId}:${seat.section}:${seat.seatNumber}`);
+    if (keys.length > 0) {
+      await redisClient.del(keys);
+    }
+    return true;
+  } catch (error) {
+    console.error('[Redis Release Error]', error.message);
+    return false;
+  }
+};
+
+/**
+ * Retrieves the owner/userId of a locked seat, if it exists.
+ */
+export const isSeatLocked = async (eventId, section, seatNumber) => {
+  try {
+    const lockKey = `seat:${eventId}:${section}:${seatNumber}`;
+    return await redisClient.get(lockKey);
+  } catch (error) {
+    return null;
+  }
+};
+
+/**
+ * Retrieves all locked seats and their owner IDs for a given event.
+ */
+export const getLockedSeatsForEvent = async (eventId) => {
+  try {
+    const pattern = `seat:${eventId}:*`;
+    const keys = await redisClient.keys(pattern);
+    if (!keys || keys.length === 0) return [];
+    
+    const lockedSeats = [];
+    for (const key of keys) {
+      const parts = key.split(':'); // ['seat', eventId, section, seatNumber]
+      const section = parts[2];
+      const seatNumber = parseInt(parts[3], 10);
+      const lockedBy = await redisClient.get(key);
+      
+      lockedSeats.push({ section, seatNumber, lockedBy });
+    }
+    return lockedSeats;
+  } catch (error) {
+    console.error('[Redis getLockedSeatsForEvent Error]', error.message);
+    return [];
+  }
+};
+
+export const lockSeat = async (eventId, section, seatNumber, userId, ttlSeconds) => {
+  try {
+    const lockKey = `seat:${eventId}:${section}:${seatNumber}`;
+    const result = await redisClient.set(lockKey, userId, 'EX', ttlSeconds, 'NX');
+    return result === 'OK';
+  } catch (error) {
+    return false;
+  }
 };
 
 export const releaseSeat = async (eventId, section, seatNumber) => {
-  const key = `seat:${eventId}:${section}:${seatNumber}`;
-  await redisClient.del(key);
+  try {
+    const lockKey = `seat:${eventId}:${section}:${seatNumber}`;
+    await redisClient.del(lockKey);
+    return true;
+  } catch (error) {
+    return false;
+  }
 };
 
 export const getSeatLockOwner = async (eventId, section, seatNumber) => {
-  const key = `seat:${eventId}:${section}:${seatNumber}`;
-  return await redisClient.get(key);
-};
-
-export const getEventLocks = async (eventId) => {
-  const locks = [];
-  if (redisClient instanceof InMemoryRedis) {
-    redisClient.cleanupExpired();
-    for (const [key, record] of redisClient.store.entries()) {
-      if (key.startsWith(`seat:${eventId}:`)) {
-        const parts = key.split(':');
-        locks.push({
-          section: parts[2],
-          seatNumber: parseInt(parts[3], 10),
-          userId: record.value
-        });
-      }
-    }
-  } else {
-    try {
-      const keys = await redisClient.keys(`seat:${eventId}:*`);
-      for (const key of keys) {
-        const userId = await redisClient.get(key);
-        const parts = key.split(':');
-        locks.push({
-          section: parts[2],
-          seatNumber: parseInt(parts[3], 10),
-          userId
-        });
-      }
-    } catch (err) {
-      console.error('[Redis getEventLocks Error]', err.message);
-    }
-  }
-  return locks;
+  return await isSeatLocked(eventId, section, seatNumber);
 };
 
 export default redisClient;

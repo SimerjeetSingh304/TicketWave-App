@@ -60,17 +60,9 @@ const ImageWithFallback = ({ src, alt, className, category }) => {
 
   if (error || !src) {
     return (
-      <div className={`relative bg-gradient-to-br ${theme.gradient} flex flex-col items-center justify-center p-6 text-center select-none ${className}`}>
+      <div className={`relative bg-gradient-to-br ${theme.gradient} flex flex-col items-center justify-center select-none ${className}`}>
         {/* Glow grid background */}
         <div className="absolute inset-0 bg-[linear-gradient(to_right,#ffffff05_1px,transparent_1px),linear-gradient(to_bottom,#ffffff05_1px,transparent_1px)] bg-[size:14px_24px] pointer-events-none"></div>
-        
-        <IconComponent className="w-12 h-12 text-white/80 mb-2 drop-shadow-md animate-pulse-slow" />
-        <span className="text-[10px] font-black uppercase tracking-widest text-white/60 block">
-          {theme.label}
-        </span>
-        <span className="text-xs text-white/40 block mt-1 font-semibold truncate max-w-[80%]">
-          {alt}
-        </span>
       </div>
     );
   }

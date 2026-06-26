@@ -15,9 +15,9 @@ import AdminPanel from './pages/AdminPanel.jsx';
 
 function App() {
   return (
-    <div className="flex flex-col min-h-screen bg-transparent text-slate-100 font-sans pb-12">
+    <div className="flex flex-col min-h-screen bg-transparent text-slate-100 font-sans">
       <Navbar />
-      <main className="flex-grow container mx-auto px-4 py-8">
+      <main className="flex-grow w-full">
         <Routes>
           {/* Public Routes */}
           <Route path="/" element={<Home />} />
@@ -67,7 +67,6 @@ function App() {
           <Route path="*" element={<Navigate to="/" replace />} />
         </Routes>
       </main>
-      <Footer />
     </div>
   );
 }

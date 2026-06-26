@@ -72,24 +72,24 @@ const MyBookings = () => {
   );
 
   return (
-    <div className="max-w-4xl mx-auto space-y-10">
+    <div className="max-w-5xl mx-auto space-y-12 px-4 pt-32 pb-24">
       
-      <div>
-        <h1 className="text-3xl font-black bg-gradient-to-r from-teal-400 to-cyan-400 bg-clip-text text-transparent">My Tickets</h1>
-        <p className="text-slate-500 text-sm mt-0.5">Manage and view your purchased entrance tickets</p>
+      <div className="text-center md:text-left">
+        <h1 className="text-4xl md:text-5xl font-black text-white tracking-tight mb-2">My Tickets</h1>
+        <p className="text-slate-400 text-sm font-medium">Manage and view your exclusive event access</p>
       </div>
 
       {/* Confirmed Tickets List */}
-      <div className="space-y-6">
-        <h2 className="text-lg font-bold border-b border-slate-800 pb-2">Active Admissions</h2>
+      <div className="space-y-8">
+        <h2 className="text-sm font-black text-indigo-400 uppercase tracking-widest border-b border-white/10 pb-4">Active Admissions</h2>
         
         {activeBookings.length === 0 ? (
-          <div className="text-center py-12 bg-white/[0.03] border border-white/10 rounded-2xl">
-            <Ticket className="w-10 h-10 text-slate-700 mx-auto mb-3" />
-            <p className="text-slate-500 text-sm">No active bookings found.</p>
+          <div className="text-center py-20 bg-[#1e293b]/40 backdrop-blur-md border border-white/5 rounded-3xl">
+            <Ticket className="w-12 h-12 text-slate-700 mx-auto mb-4" />
+            <p className="text-slate-400 text-sm font-semibold">No active bookings found.</p>
           </div>
         ) : (
-          <div className="space-y-6">
+          <div className="space-y-8">
             {activeBookings.map((booking) => {
               const eventDate = new Date(booking.event?.date);
               const formattedDate = eventDate.toLocaleDateString('en-US', {
@@ -108,52 +108,60 @@ const MyBookings = () => {
               return (
                 <div
                   key={booking._id}
-                  className="flex flex-col lg:flex-row bg-white/5 border border-white/10 rounded-3xl overflow-hidden shadow-xl"
+                  className="flex flex-col lg:flex-row bg-[#0f172a] rounded-[2rem] border border-white/10 shadow-2xl relative overflow-hidden group hover:shadow-[0_0_40px_rgba(79,70,229,0.15)] transition-all duration-500"
                 >
+                  {/* Subtle hover gradient */}
+                  <div className="absolute inset-0 bg-gradient-to-br from-indigo-500/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500 pointer-events-none"></div>
+                  
                   {/* Left Column: Event details (70%) */}
-                  <div className="w-full lg:w-[70%] p-6 sm:p-8 space-y-6 flex flex-col justify-between">
-                    <div className="space-y-3">
-                      <div className="flex items-center space-x-2 flex-wrap gap-y-1">
-                        <span className="px-2.5 py-0.5 bg-teal-600/10 border border-teal-500/20 rounded-full text-[10px] font-bold text-teal-400 tracking-wide uppercase">
+                  <div className="w-full lg:w-[70%] p-8 space-y-6 flex flex-col justify-between relative z-10">
+                    <div className="space-y-4">
+                      <div className="flex items-center space-x-3 flex-wrap gap-y-2">
+                        <span className="px-3 py-1 bg-white/5 border border-white/10 rounded-full text-[10px] font-bold text-white tracking-widest uppercase">
                           {booking.event?.category || 'Event'}
                         </span>
-                        <span className="px-2.5 py-0.5 rounded-full text-[9px] font-bold uppercase bg-green-500/10 border border-green-500/20 text-green-400">
-                          Confirmed
+                        <span className="px-3 py-1 rounded-full text-[10px] font-bold uppercase tracking-widest bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 flex items-center space-x-1.5">
+                          <CheckCircle2 className="w-3 h-3" />
+                          <span>Confirmed</span>
                         </span>
                       </div>
-                      <h3 className="font-extrabold text-xl text-slate-100">{booking.event?.title}</h3>
+                      <h3 className="font-black text-2xl md:text-3xl text-white leading-tight">{booking.event?.title}</h3>
                       
-                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 text-xs text-slate-400 pt-2">
-                        <div className="flex items-center space-x-2">
-                          <Calendar className="w-4 h-4 text-cyan-400 shrink-0" />
+                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 text-sm text-slate-300 font-medium pt-2">
+                        <div className="flex items-center space-x-3">
+                          <div className="w-8 h-8 rounded-full bg-white/5 flex items-center justify-center">
+                            <Calendar className="w-4 h-4 text-indigo-400" />
+                          </div>
                           <span>{formattedDate}</span>
                         </div>
-                        <div className="flex items-center space-x-2">
-                          <MapPin className="w-4 h-4 text-teal-400 shrink-0" />
-                          <span className="capitalize">{booking.event?.venue}, {booking.event?.city}</span>
+                        <div className="flex items-center space-x-3">
+                          <div className="w-8 h-8 rounded-full bg-white/5 flex items-center justify-center">
+                            <MapPin className="w-4 h-4 text-indigo-400" />
+                          </div>
+                          <span className="capitalize truncate">{booking.event?.venue}, {booking.event?.city}</span>
                         </div>
                       </div>
                     </div>
 
-                    <div className="border-t border-slate-800/80 pt-4 flex flex-wrap items-center justify-between gap-4 text-xs">
+                    <div className="border-t border-white/5 pt-6 flex flex-wrap items-center justify-between gap-6 text-sm">
                       <div>
-                        <span className="text-[10px] text-slate-500 block uppercase font-bold">Seats</span>
-                        <span className="text-slate-200 font-bold">
+                        <span className="text-[10px] text-slate-500 block uppercase tracking-widest font-bold mb-1">Seats</span>
+                        <span className="text-white font-black text-lg">
                           {booking.seats.map(s => `${s.section} #${s.seatNumber}`).join(', ')}
                         </span>
                       </div>
                       <div>
-                        <span className="text-[10px] text-slate-500 block uppercase font-bold">Amount Paid</span>
-                        <span className="text-slate-200 font-bold">₹{booking.totalAmount}</span>
+                        <span className="text-[10px] text-slate-500 block uppercase tracking-widest font-bold mb-1">Amount Paid</span>
+                        <span className="text-white font-black text-lg">${booking.totalAmount}</span>
                       </div>
                       
                       {isCancellable && (
                         <button
                           onClick={() => handleCancelBooking(booking._id)}
                           disabled={cancelMutation.isPending}
-                          className="px-4 py-2 border border-rose-500/30 text-rose-400 hover:bg-rose-500/10 font-bold rounded-xl flex items-center space-x-1.5 transition-colors disabled:opacity-50 disabled:pointer-events-none"
+                          className="px-5 py-2.5 border border-rose-500/30 text-rose-400 hover:bg-rose-500 hover:text-white hover:shadow-[0_0_20px_rgba(244,63,94,0.4)] font-bold rounded-xl flex items-center space-x-2 transition-all duration-300 uppercase tracking-wider text-[10px] disabled:opacity-50 disabled:pointer-events-none"
                         >
-                          <Ban className="w-3.5 h-3.5" />
+                          <Ban className="w-4 h-4" />
                           <span>{isCancelling ? 'Cancelling...' : 'Cancel Booking'}</span>
                         </button>
                       )}
@@ -161,26 +169,27 @@ const MyBookings = () => {
                   </div>
 
                   {/* Right Column: QR Code ticket section (30%) */}
-                  <div className="w-full lg:w-[30%] bg-white/[0.03] p-6 flex flex-col items-center justify-center border-t lg:border-t-0 lg:border-l border-slate-800/80 relative">
+                  <div className="w-full lg:w-[30%] bg-[#0b1120] p-8 flex flex-col items-center justify-center border-t lg:border-t-0 lg:border-l border-dashed border-white/10 relative z-10">
                     
                     {/* Visual notches on ticket divider */}
-                    <div className="hidden lg:block absolute -left-3 top-0 w-6 h-6 rounded-full bg-[#080810] border-b border-white/10"></div>
-                    <div className="hidden lg:block absolute -left-3 bottom-0 w-6 h-6 rounded-full bg-[#080810] border-t border-white/10"></div>
+                    <div className="hidden lg:block absolute -left-4 top-1/2 -translate-y-1/2 w-8 h-8 bg-[#080810] rounded-full border-r border-white/10"></div>
 
                     {booking.qrCode ? (
-                      <div className="flex flex-col items-center space-y-2">
-                        <img
-                          src={booking.qrCode}
-                          alt="Ticket QR Code"
-                          className="w-24 h-24 rounded-lg"
-                        />
-                        <span className="text-[10px] text-slate-500 font-medium tracking-wide">
+                      <div className="flex flex-col items-center space-y-4">
+                        <div className="bg-white p-3 rounded-2xl shadow-xl">
+                          <img
+                            src={booking.qrCode}
+                            alt="Ticket QR Code"
+                            className="w-32 h-32 md:w-40 md:h-40"
+                          />
+                        </div>
+                        <span className="text-[10px] text-indigo-400 font-bold uppercase tracking-widest">
                           Scan at venue
                         </span>
                       </div>
                     ) : (
-                      <div className="flex flex-col items-center space-y-2">
-                        <div className="w-24 h-24 bg-white/5 rounded-lg flex items-center justify-center border border-white/10 text-center px-2 text-[10px] text-slate-500">
+                      <div className="flex flex-col items-center space-y-4">
+                        <div className="w-32 h-32 md:w-40 md:h-40 bg-white/5 rounded-2xl flex items-center justify-center border border-white/10 text-center px-4 text-xs font-semibold text-slate-500">
                           QR Generating...
                         </div>
                       </div>
@@ -195,43 +204,48 @@ const MyBookings = () => {
       </div>
 
       {/* Historical / Cancelled Bookings */}
-      <div className="space-y-4 pt-6">
-        <h2 className="text-lg font-bold border-b border-slate-800 pb-2">History & Pending</h2>
+      <div className="space-y-6 pt-12">
+        <h2 className="text-sm font-black text-slate-500 uppercase tracking-widest border-b border-white/10 pb-4">History & Pending</h2>
         
         {pastBookings.length === 0 ? (
-          <div className="text-center py-8 bg-white/[0.02] border border-white/[0.06] rounded-2xl">
-            <p className="text-slate-500 text-xs">No past bookings.</p>
+          <div className="text-center py-12 bg-white/[0.02] border border-white/[0.05] rounded-3xl">
+            <p className="text-slate-600 text-sm font-semibold">No past bookings.</p>
           </div>
         ) : (
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
             {pastBookings.map((b) => {
-              let badgeStyle = 'bg-slate-800 border-slate-700 text-slate-400';
+              let badgeStyle = 'bg-white/5 border-white/10 text-slate-400';
               let badgeText = b.status;
               
               if (b.status === 'pending') {
-                badgeStyle = 'bg-amber-500/10 border border-amber-500/20 text-amber-400';
+                badgeStyle = 'bg-amber-500/10 border-amber-500/20 text-amber-400';
                 badgeText = 'Payment Pending';
               } else if (b.status === 'confirmed') {
-                badgeStyle = 'bg-green-500/10 border border-green-500/20 text-green-400';
-                badgeText = 'Confirmed';
+                badgeStyle = 'bg-emerald-500/10 border-emerald-500/20 text-emerald-400';
+                badgeText = 'Completed';
               } else if (b.status === 'cancelled') {
-                badgeStyle = 'bg-red-500/10 border border-red-500/20 text-red-400';
+                badgeStyle = 'bg-rose-500/10 border-rose-500/20 text-rose-400';
                 badgeText = 'Cancelled';
               }
 
               return (
                 <div
                   key={b._id}
-                  className="bg-slate-900/40 border border-slate-800/60 rounded-2xl p-5 flex justify-between items-start"
+                  className="bg-[#0f172a]/50 border border-white/5 rounded-2xl p-6 flex flex-col justify-between hover:border-white/10 transition-colors"
                 >
-                  <div className="space-y-1.5 text-xs text-slate-400">
-                    <h4 className="font-bold text-sm text-slate-300 leading-tight">{b.event?.title || 'Unknown Event'}</h4>
-                    <p>Seats: {b.seats.map(s => `${s.section} #${s.seatNumber}`).join(', ')}</p>
-                    <p>Paid: ₹{b.totalAmount}</p>
+                  <div className="space-y-3 mb-4">
+                    <h4 className="font-bold text-base text-white leading-tight line-clamp-1">{b.event?.title || 'Unknown Event'}</h4>
+                    <div className="text-xs text-slate-400 space-y-1">
+                      <p>Seats: {b.seats.map(s => `${s.section} #${s.seatNumber}`).join(', ')}</p>
+                      <p>Paid: ${b.totalAmount}</p>
+                    </div>
                   </div>
-                  <span className={`px-2.5 py-0.5 rounded-full text-[9px] font-bold uppercase border ${badgeStyle}`}>
-                    {badgeText}
-                  </span>
+                  <div className="flex justify-between items-center">
+                    <span className="text-[10px] text-slate-500 font-mono uppercase tracking-wider">ID: {b._id.slice(-6)}</span>
+                    <span className={`px-3 py-1 rounded-full text-[9px] font-bold uppercase tracking-wider border ${badgeStyle}`}>
+                      {badgeText}
+                    </span>
+                  </div>
                 </div>
               );
             })}

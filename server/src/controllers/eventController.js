@@ -1,7 +1,7 @@
 import Event from '../models/Event.js';
 import Booking from '../models/Booking.js';
 import fs from 'fs';
-import { getEventLocks } from '../services/redis.js';
+import { getLockedSeatsForEvent } from '../services/redis.js';
 
 // @desc    Get all events (filtered, paginated)
 // @route   GET /api/events
@@ -107,7 +107,7 @@ export const getEventById = async (req, res) => {
   );
 
   // Fetch current active locks from Redis
-  const lockedSeats = await getEventLocks(event._id);
+  const lockedSeats = await getLockedSeatsForEvent(event._id);
 
   res.status(200).json({
     success: true,
