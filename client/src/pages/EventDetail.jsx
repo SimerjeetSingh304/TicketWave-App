@@ -22,6 +22,7 @@ const EventDetail = () => {
   const [errorMsg, setErrorMsg] = useState('');
   const [viewerCount, setViewerCount] = useState(1);
   const [highlightViewer, setHighlightViewer] = useState(false);
+  const [isLiked, setIsLiked] = useState(false);
 
   // Fetch Event Details
   const { data, isLoading, isError, error } = useQuery({
@@ -209,8 +210,11 @@ const EventDetail = () => {
             <button onClick={handleShare} className="w-12 h-12 rounded-xl bg-[#1e293b]/50 hover:bg-[#1e293b] border border-white/10 flex items-center justify-center text-slate-300 hover:text-white transition-colors backdrop-blur-md">
               <Share2 className="w-5 h-5" />
             </button>
-            <button className="w-12 h-12 rounded-xl bg-[#1e293b]/50 hover:bg-[#1e293b] border border-white/10 flex items-center justify-center text-slate-300 hover:text-white transition-colors backdrop-blur-md">
-              <Heart className="w-5 h-5" />
+            <button 
+              onClick={() => setIsLiked(!isLiked)} 
+              className={`w-12 h-12 rounded-xl bg-[#1e293b]/50 border border-white/10 flex items-center justify-center transition-colors backdrop-blur-md ${isLiked ? 'text-rose-500 hover:bg-[#1e293b]/80' : 'text-slate-300 hover:text-white hover:bg-[#1e293b]'}`}
+            >
+              <Heart className="w-5 h-5" fill={isLiked ? "currentColor" : "none"} />
             </button>
           </div>
         </div>

@@ -7,7 +7,8 @@
   "scripts": {
     "start": "node index.js",
     "dev": "nodemon index.js",
-    "seed": "node src/scripts/seed.js"
+    "seed": "node src/scripts/seed.js",
+    "fix-dates": "node src/scripts/updateDates.js"
   },
   "dependencies": {
     "bcryptjs": "^2.4.3",
