@@ -59,6 +59,11 @@ app.get('/health', (req, res) => {
   res.status(200).json({ success: true, message: 'TicketWave API service is online and healthy' });
 });
 
+// Root endpoint for testing
+app.get('/', (req, res) => {
+  res.status(200).json({ success: true, message: 'Welcome to the StellarEvents API' });
+});
+
 // Capture and process global exceptions
 app.use(errorHandler);
 
