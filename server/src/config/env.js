@@ -9,7 +9,6 @@ const __dirname = path.dirname(__filename);
 dotenv.config({ path: path.resolve(__dirname, '../../.env') });
 
 const REQUIRED_ENV = [
-  'PORT',
   'MONGO_URI',
   'REDIS_URL',
   'JWT_SECRET',
