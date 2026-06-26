@@ -12,10 +12,14 @@ import {
 } from '../controllers/eventController.js';
 import { authMiddleware, checkRole } from '../middleware/auth.js';
 
-// Setup uploads directory
-const uploadDir = './uploads';
+// Setup uploads directory (use /tmp in serverless/production environments to avoid read-only FS errors)
+const uploadDir = process.env.NODE_ENV === 'production' ? '/tmp/uploads' : './uploads';
 if (!fs.existsSync(uploadDir)) {
-  fs.mkdirSync(uploadDir, { recursive: true });
+  try {
+    fs.mkdirSync(uploadDir, { recursive: true });
+  } catch (err) {
+    console.warn('Warning: Could not create upload directory:', err.message);
+  }
 }
 
 // Multer storage engine configuration
