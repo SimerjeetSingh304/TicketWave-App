@@ -131,15 +131,15 @@ cd server
 npm run seed
 ```
 
-This creates the following credentials:
-- **System Admin**: `admin@ticketwave.com` (Password: `password123`)
-- **Event Organizer**: `organizer@ticketwave.com` (Password: `password123`)
-- **Attendee User**: `user@ticketwave.com` (Password: `password123`)
+This creates the following demo accounts:
 
-### Sign in and test
-Use the attendee account to sign in and explore the application:
-- **Email**: `user@ticketwave.com`
-- **Password**: `password123`
+| Role | Email | Password |
+| --- | --- | --- |
+| Admin | `admin@ticketwave.com` | `password123` |
+| Organizer | `organizer@ticketwave.com` | `password123` |
+| User | `user@ticketwave.com` | `password123` |
+
+> **Warning:** The seed script deletes existing users, events, bookings, and notifications. Run it only against a disposable development database, never production.
 
 ---
 
