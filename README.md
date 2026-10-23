@@ -64,9 +64,23 @@ TicketWave/
 - **MongoDB**: Active instance on `localhost:27017`
 - **Redis (Optional)**: Active on `localhost:6379`. If Redis is missing, the application automatically triggers an **In-Memory Cache & Lock fallback store** that replicates Redis functionality perfectly so that the server remains fully functional.
 
-### Step 1: Install Dependencies
-Open two terminals or run:
+### Quickstart (Single Terminal from Root)
+```bash
+# 1. Install all dependencies (root, server, and client)
+npm run install-all
 
+# 2. Setup environment files
+cp server/.env.example server/.env
+cp client/.env.example client/.env
+
+# 3. Seed database with fresh users & events (relative to current date)
+npm run seed
+
+# 4. Start both backend and frontend concurrently
+npm run dev
+```
+
+### Manual Step-by-Step Setup
 ```bash
 # Install server dependencies
 cd server

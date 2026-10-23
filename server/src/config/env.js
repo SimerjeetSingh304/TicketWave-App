@@ -10,7 +10,6 @@ dotenv.config({ path: path.resolve(__dirname, '../../.env') });
 
 const REQUIRED_ENV = [
   'MONGO_URI',
-  'REDIS_URL',
   'JWT_SECRET',
   'JWT_REFRESH_SECRET',
   'CLIENT_URL'
