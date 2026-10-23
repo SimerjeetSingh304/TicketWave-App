@@ -81,7 +81,9 @@ export const login = async (req, res) => {
   }
 
   // Verify password
-  const isMatch = await user.matchPassword(password);
+  const isMatch = typeof user.matchPassword === 'function' 
+    ? await user.matchPassword(password) 
+    : await user.comparePassword(password);
   if (!isMatch) {
     return res.status(401).json({
       success: false,
