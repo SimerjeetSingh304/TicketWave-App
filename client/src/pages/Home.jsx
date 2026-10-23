@@ -8,7 +8,7 @@ import EventCardSkeleton from '../components/EventCardSkeleton';
 import Footer from '../components/Footer';
 import { Search, MapPin, Calendar, Compass, Sparkles, AlertCircle, X, ChevronDown } from 'lucide-react';
 
-const CATEGORIES = ['Concerts', 'Comedy', 'Theatre', 'Conferences', 'Sports'];
+const CATEGORIES = ['Concerts', 'Sports', 'Comedy', 'Music', 'Exhibitions'];
 
 const Home = () => {
   const navigate = useNavigate();
