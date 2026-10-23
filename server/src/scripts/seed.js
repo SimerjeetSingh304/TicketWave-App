@@ -114,7 +114,7 @@ const seedData = async () => {
         date: new Date(Date.now() + 8 * 24 * 60 * 60 * 1000),
         venue: 'Wankhede Stadium, Churchgate',
         city: 'mumbai',
-        bannerImage: 'https://images.unsplash.com/photo-1531415074868-036b1c57e329?auto=format&fit=crop&q=80',
+        bannerImage: 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTBwxTnR1_AdfH2nHebBXTznvA_mX6g_p51oiPsyxWrM5_5NUh7yVOaP3Kx&s=10',
         organizer: organizer._id,
         seatSections: [
           { name: 'Pavilion VIP', price: 4500, totalSeats: 25, availableSeats: 25 },

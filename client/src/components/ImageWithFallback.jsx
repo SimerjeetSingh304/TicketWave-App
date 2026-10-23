@@ -33,8 +33,8 @@ const CATEGORY_THEMES = {
     label: 'Music Event'
   },
   exhibitions: {
-    gradient: 'from-amber-600 via-yellow-500 to-orange-600',
-    icon: Palette,
+    gradient: 'from-green-600 via-teal-600 to-emerald-700',
+    icon: Presentation,
     label: 'Exhibition'
   }
 };
