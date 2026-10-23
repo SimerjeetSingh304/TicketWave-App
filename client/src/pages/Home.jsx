@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
+import { createPortal } from 'react-dom';
 import { useQuery } from '@tanstack/react-query';
 import { useNavigate, useSearchParams, Link } from 'react-router-dom';
 import api from '../services/api';
@@ -6,7 +7,7 @@ import useDebounce from '../hooks/useDebounce';
 import EventCard from '../components/EventCard';
 import EventCardSkeleton from '../components/EventCardSkeleton';
 import Footer from '../components/Footer';
-import { Search, MapPin, Calendar, Compass, Sparkles, AlertCircle, X, ChevronDown } from 'lucide-react';
+import { Search, MapPin, Calendar, Compass, Sparkles, AlertCircle, X, ChevronDown, Check } from 'lucide-react';
 
 const CATEGORIES = ['Concerts', 'Sports', 'Comedy', 'Music', 'Exhibitions'];
 
@@ -20,11 +21,19 @@ const Home = () => {
   const [showSuggestions, setShowSuggestions] = useState(false);
   const [activeSuggestionIdx, setActiveSuggestionIdx] = useState(-1);
   const [dateFilter, setDateFilter] = useState('');
+  const [datePickerOpen, setDatePickerOpen] = useState(false);
+  const [cityMenuPosition, setCityMenuPosition] = useState(null);
+  const [dateMenuPosition, setDateMenuPosition] = useState(null);
   const [page, setPage] = useState(1);
   const [cityDropdownOpen, setCityDropdownOpen] = useState(false);
 
   const searchContainerRef = useRef(null);
   const cityDropdownRef = useRef(null);
+  const datePickerRef = useRef(null);
+  const cityTriggerRef = useRef(null);
+  const dateTriggerRef = useRef(null);
+  const cityMenuRef = useRef(null);
+  const dateMenuRef = useRef(null);
 
   // Sync parameters from URL params
   const selectedCity = searchParams.get('city') || '';
@@ -44,6 +53,55 @@ const Home = () => {
   });
 
   const allEvents = data?.events || [];
+  const getMenuPosition = (triggerRef) => {
+    const rect = triggerRef.current?.getBoundingClientRect();
+    if (!rect) return null;
+
+    const spaceBelow = window.innerHeight - rect.bottom - 12;
+    const placeAbove = spaceBelow < 240 && rect.top > 180;
+
+    return {
+      left: rect.left,
+      width: rect.width,
+      ...(placeAbove
+        ? { bottom: window.innerHeight - rect.top + 8, maxHeight: rect.top - 24 }
+        : { top: rect.bottom + 8, maxHeight: spaceBelow })
+    };
+  };
+
+  useEffect(() => {
+    if (!cityDropdownOpen && !datePickerOpen) return undefined;
+
+    const updateMenuPositions = () => {
+      if (cityDropdownOpen) setCityMenuPosition(getMenuPosition(cityTriggerRef));
+      if (datePickerOpen) setDateMenuPosition(getMenuPosition(dateTriggerRef));
+    };
+
+    updateMenuPositions();
+    window.addEventListener('resize', updateMenuPositions);
+    window.addEventListener('scroll', updateMenuPositions, true);
+    return () => {
+      window.removeEventListener('resize', updateMenuPositions);
+      window.removeEventListener('scroll', updateMenuPositions, true);
+    };
+  }, [cityDropdownOpen, datePickerOpen]);
+
+  const monthOptions = (() => {
+    return [2026, 2027]
+      .flatMap((year) =>
+        Array.from({ length: 12 }, (_, monthIndex) => {
+          const value = `${year}-${String(monthIndex + 1).padStart(2, '0')}`;
+          return {
+            value,
+            label: new Date(year, monthIndex, 1).toLocaleDateString('en-US', {
+              month: 'long',
+              year: 'numeric'
+            })
+          };
+        })
+      )
+      .reverse();
+  })();
 
   // Extract unique cities from fetched events database
   const availableCities = Array.from(
@@ -59,7 +117,10 @@ const Home = () => {
         setShowSuggestions(false);
       }
       if (cityDropdownRef.current && !cityDropdownRef.current.contains(e.target)) {
-        setCityDropdownOpen(false);
+        if (!cityMenuRef.current?.contains(e.target)) setCityDropdownOpen(false);
+      }
+      if (datePickerRef.current && !datePickerRef.current.contains(e.target)) {
+        if (!dateMenuRef.current?.contains(e.target)) setDatePickerOpen(false);
       }
     };
     document.addEventListener('mousedown', handleOutsideClick);
@@ -167,9 +228,9 @@ const Home = () => {
     }
     // 4. Date filter
     if (dateFilter) {
-      const eventDate = new Date(event.date).toDateString();
-      const filterDate = new Date(dateFilter).toDateString();
-      if (eventDate !== filterDate) return false;
+      const eventDate = new Date(event.date);
+      const [year, month] = dateFilter.split('-').map(Number);
+      if (eventDate.getFullYear() !== year || eventDate.getMonth() + 1 !== month) return false;
     }
     return true;
   });
@@ -228,11 +289,12 @@ const Home = () => {
 
         {/* Floating Filter Bar */}
         <div id="explore" className="absolute bottom-0 left-1/2 -translate-x-1/2 translate-y-1/2 w-full max-w-5xl px-6 z-30">
-          <div className="bg-[#1e293b]/80 backdrop-blur-2xl border border-white/10 rounded-3xl p-3 shadow-2xl flex flex-col md:flex-row items-center justify-between gap-3 relative">
+          <div className="bg-[#1e293b]/80 backdrop-blur-2xl border border-white/10 rounded-3xl p-3 shadow-2xl flex flex-col lg:flex-row items-stretch justify-between gap-3 relative">
             
             {/* City Filter */}
-            <div ref={cityDropdownRef} className="relative flex-1 w-full group">
-              <button 
+            <div ref={cityDropdownRef} className="relative flex-1 min-w-0 w-full group">
+              <button
+                ref={cityTriggerRef}
                 onClick={() => setCityDropdownOpen(!cityDropdownOpen)}
                 className="w-full flex items-center bg-white/5 hover:bg-white/10 border border-white/5 rounded-2xl px-5 py-4 transition-colors"
               >
@@ -244,9 +306,13 @@ const Home = () => {
                 <ChevronDown className={`w-4 h-4 text-slate-500 transition-transform ${cityDropdownOpen ? 'rotate-180' : ''}`} />
               </button>
               
-              {cityDropdownOpen && (
-                <div className="absolute left-0 right-0 top-full mt-2 bg-[#1e293b] border border-white/10 rounded-2xl overflow-hidden shadow-2xl z-50">
-                  <div className="max-h-60 overflow-y-auto">
+              {cityDropdownOpen && cityMenuPosition && createPortal(
+                <div
+                  ref={cityMenuRef}
+                  style={cityMenuPosition}
+                  className="fixed z-[100] bg-[#1e293b] border border-white/10 rounded-2xl overflow-hidden shadow-2xl"
+                >
+                  <div className="overflow-y-auto" style={{ maxHeight: cityMenuPosition.maxHeight }}>
                     <button
                       onClick={() => { handleCitySelect(''); setCityDropdownOpen(false); }}
                       className="w-full text-left px-5 py-3 text-sm font-semibold hover:bg-white/5 transition-colors text-slate-300 border-b border-white/5"
@@ -263,28 +329,92 @@ const Home = () => {
                       </button>
                     ))}
                   </div>
-                </div>
+                </div>,
+                document.body
               )}
             </div>
 
             {/* Date Filter */}
-            <div className="relative flex-1 w-full group">
-              <div className="w-full flex items-center bg-white/5 hover:bg-white/10 border border-white/5 rounded-2xl px-5 py-4 transition-colors">
+            <div ref={datePickerRef} className="relative flex-1 min-w-0 w-full group">
+              <button
+                ref={dateTriggerRef}
+                type="button"
+                onClick={() => setDatePickerOpen(!datePickerOpen)}
+                aria-haspopup="listbox"
+                aria-expanded={datePickerOpen}
+                className="w-full flex items-center bg-white/5 hover:bg-white/10 border border-white/5 rounded-2xl px-5 py-4 transition-colors text-left"
+              >
                 <Calendar className="w-5 h-5 text-teal-400 mr-3" />
                 <div className="text-left flex-grow">
                   <div className="text-[10px] text-slate-400 font-bold uppercase tracking-wider mb-0.5">Date</div>
-                  <input
-                    type="date"
-                    value={dateFilter}
-                    onChange={(e) => { setDateFilter(e.target.value); setPage(1); }}
-                    className="bg-transparent focus:outline-none text-white text-sm font-semibold [&::-webkit-calendar-picker-indicator]:filter [&::-webkit-calendar-picker-indicator]:invert cursor-pointer w-full"
-                  />
+                  <div className={`text-sm font-semibold ${dateFilter ? 'text-white' : 'text-slate-400'}`}>
+                    {monthOptions.find((option) => option.value === dateFilter)?.label || 'Any month'}
+                  </div>
                 </div>
-              </div>
+                <ChevronDown className={`w-4 h-4 text-slate-500 transition-transform ${datePickerOpen ? 'rotate-180' : ''}`} />
+              </button>
+
+              {datePickerOpen && dateMenuPosition && createPortal(
+                <div
+                  ref={dateMenuRef}
+                  style={{
+                    left: dateMenuPosition.left,
+                    width: dateMenuPosition.width,
+                    maxHeight: dateMenuPosition.maxHeight,
+                    ...(dateMenuPosition.top !== undefined
+                      ? { top: dateMenuPosition.top }
+                      : { bottom: dateMenuPosition.bottom })
+                  }}
+                  className="fixed z-[100] flex flex-col bg-[#1e293b] border border-white/10 rounded-2xl shadow-2xl overflow-hidden"
+                >
+                  <div className="shrink-0 px-4 py-3 border-b border-white/10">
+                    <div className="text-sm font-bold text-white">Browse by month</div>
+                    <div className="text-xs text-slate-400 mt-1">Scroll to choose a month and year</div>
+                  </div>
+                  <div
+                    className="min-h-0 overflow-y-auto p-2"
+                    style={{ maxHeight: Math.max(100, dateMenuPosition.maxHeight - 68) }}
+                    role="listbox"
+                    aria-label="Choose event month"
+                  >
+                    <button
+                      type="button"
+                      onClick={() => { setDateFilter(''); setPage(1); setDatePickerOpen(false); }}
+                      className={`w-full flex items-center justify-between px-3 py-2.5 rounded-xl text-sm transition-colors ${
+                        !dateFilter ? 'bg-teal-500/10 text-teal-300' : 'text-slate-300 hover:bg-white/5'
+                      }`}
+                      role="option"
+                      aria-selected={!dateFilter}
+                    >
+                      <span>Any month</span>
+                      {!dateFilter && <Check className="w-4 h-4" />}
+                    </button>
+                    {monthOptions.map((option) => {
+                      const isSelected = dateFilter === option.value;
+                      return (
+                        <button
+                          key={option.value}
+                          type="button"
+                          onClick={() => { setDateFilter(option.value); setPage(1); setDatePickerOpen(false); }}
+                          className={`w-full flex items-center justify-between px-3 py-2.5 rounded-xl text-sm transition-colors ${
+                            isSelected ? 'bg-teal-500/10 text-teal-300' : 'text-slate-300 hover:bg-white/5'
+                          }`}
+                          role="option"
+                          aria-selected={isSelected}
+                        >
+                          <span>{option.label}</span>
+                          {isSelected && <Check className="w-4 h-4" />}
+                        </button>
+                      );
+                    })}
+                  </div>
+                </div>,
+                document.body
+              )}
             </div>
 
             {/* Search Input */}
-            <div className="relative flex-[1.5] w-full group">
+            <div className="relative flex-[1.5] min-w-0 w-full group">
               <div className="w-full flex items-center bg-white/5 hover:bg-white/10 focus-within:bg-white/10 border border-white/5 focus-within:border-indigo-500/50 rounded-2xl px-5 py-4 transition-colors">
                 <Search className="w-5 h-5 text-slate-400 mr-3" />
                 <div className="text-left flex-grow">
@@ -341,7 +471,7 @@ const Home = () => {
         {isFilterActive && (
           <div className="flex items-center justify-between bg-white/5 border border-white/10 rounded-2xl p-4">
             <div className="flex items-center space-x-2 text-sm text-slate-300">
-              <span className="font-semibold text-white">{filteredEvents.length}</span> results found
+              <span className="font-semibold text-white">{filteredEvents.length}</span>{' '}results found
             </div>
             <button
               onClick={handleResetAll}
