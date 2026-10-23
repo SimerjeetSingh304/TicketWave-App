@@ -3,6 +3,7 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import api from '../services/api';
 import { useToast } from '../context/ToastContext';
 import { Calendar, MapPin, Ticket, AlertCircle, Info, Ban, Sparkles, CheckCircle2 } from 'lucide-react';
+import ImageWithFallback from '../components/ImageWithFallback';
 
 const MyBookings = () => {
   const queryClient = useQueryClient();
@@ -141,32 +142,60 @@ const MyBookings = () => {
                   key={booking._id}
                   className="flex flex-col lg:flex-row bg-[#0b1120]/80 backdrop-blur-xl rounded-[2.5rem] border border-white/10 shadow-[0_20px_40px_-15px_rgba(0,0,0,0.5)] relative overflow-hidden group transition-all duration-500 hover:border-indigo-500/50"
                 >
+                  {/* Ambient event backdrop blur */}
+                  {booking.event?.bannerImage && (
+                    <div className="absolute inset-0 z-0 opacity-15 overflow-hidden pointer-events-none">
+                      <ImageWithFallback
+                        src={booking.event.bannerImage}
+                        alt=""
+                        category={booking.event.category}
+                        className="w-full h-full object-cover filter blur-3xl scale-125"
+                      />
+                    </div>
+                  )}
+
                   <div className="absolute inset-0 bg-gradient-to-br from-indigo-500/10 via-transparent to-teal-500/5 opacity-0 group-hover:opacity-100 transition-opacity duration-700 pointer-events-none"></div>
                   
                   {/* Left Column: Event details */}
                   <div className="w-full lg:w-[72%] p-8 md:p-12 space-y-8 flex flex-col justify-between relative z-10">
                     <div className="space-y-6">
-                      <div className="flex flex-wrap items-center gap-3">
-                        <span className="px-4 py-1.5 bg-indigo-500/20 border border-indigo-500/30 rounded-full text-xs font-black text-indigo-300 tracking-widest uppercase shadow-[0_0_15px_rgba(99,102,241,0.2)]">
-                          {booking.event?.category || 'Event'}
-                        </span>
-                        <span className="px-4 py-1.5 rounded-full text-xs font-black uppercase tracking-widest bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 flex items-center space-x-1.5">
-                          <CheckCircle2 className="w-3 h-3" />
-                          <span>Admit One</span>
-                        </span>
+                      
+                      {/* Event Header with Poster Image & Info */}
+                      <div className="flex flex-col sm:flex-row gap-6 items-start">
+                        {/* Event Poster Image */}
+                        <div className="w-24 h-24 sm:w-32 sm:h-32 md:w-36 md:h-36 rounded-2xl overflow-hidden shrink-0 border border-white/10 shadow-2xl relative group-hover:border-indigo-500/50 group-hover:scale-105 transition-all duration-500 bg-[#0f172a]">
+                          <ImageWithFallback
+                            src={booking.event?.bannerImage}
+                            alt={booking.event?.title || 'Event poster'}
+                            category={booking.event?.category}
+                            className="w-full h-full object-cover"
+                          />
+                        </div>
+
+                        <div className="space-y-3 flex-1 min-w-0">
+                          <div className="flex flex-wrap items-center gap-3">
+                            <span className="px-4 py-1.5 bg-indigo-500/20 border border-indigo-500/30 rounded-full text-xs font-black text-indigo-300 tracking-widest uppercase shadow-[0_0_15px_rgba(99,102,241,0.2)]">
+                              {booking.event?.category || 'Event'}
+                            </span>
+                            <span className="px-4 py-1.5 rounded-full text-xs font-black uppercase tracking-widest bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 flex items-center space-x-1.5">
+                              <CheckCircle2 className="w-3 h-3" />
+                              <span>Admit One</span>
+                            </span>
+                          </div>
+                          
+                          <h3 className="font-black text-2xl sm:text-3xl md:text-5xl text-white leading-[1.1] tracking-tight group-hover:text-transparent group-hover:bg-clip-text group-hover:bg-gradient-to-r group-hover:from-white group-hover:to-indigo-200 transition-all duration-300">
+                            {booking.event?.title}
+                          </h3>
+                        </div>
                       </div>
                       
-                      <h3 className="font-black text-3xl md:text-5xl text-white leading-[1.1] tracking-tight group-hover:text-transparent group-hover:bg-clip-text group-hover:bg-gradient-to-r group-hover:from-white group-hover:to-indigo-200 transition-all duration-300">
-                        {booking.event?.title}
-                      </h3>
-                      
-                      <div className="flex flex-col sm:flex-row sm:items-center gap-6 text-slate-300 font-semibold pt-2">
+                      <div className="flex flex-col sm:flex-row sm:items-center gap-4 text-slate-300 font-semibold pt-2">
                         <div className="flex items-center space-x-4 bg-white/5 px-5 py-3 rounded-2xl border border-white/5 hover:bg-white/10 transition-colors">
-                          <Calendar className="w-5 h-5 text-indigo-400" />
+                          <Calendar className="w-5 h-5 text-indigo-400 shrink-0" />
                           <span>{formattedDate}</span>
                         </div>
                         <div className="flex items-center space-x-4 bg-white/5 px-5 py-3 rounded-2xl border border-white/5 hover:bg-white/10 transition-colors">
-                          <MapPin className="w-5 h-5 text-teal-400" />
+                          <MapPin className="w-5 h-5 text-teal-400 shrink-0" />
                           <span className="capitalize">{booking.event?.venue}, {booking.event?.city}</span>
                         </div>
                       </div>
@@ -280,7 +309,19 @@ const MyBookings = () => {
                 >
                   <div className="space-y-4 mb-6">
                     <div className="flex items-start justify-between gap-4">
-                      <h4 className="font-bold text-lg text-white leading-tight line-clamp-2 group-hover:text-indigo-300 transition-colors">{b.event?.title || 'Unknown Event'}</h4>
+                      <div className="flex items-center gap-3 min-w-0">
+                        <div className="w-12 h-12 rounded-xl overflow-hidden shrink-0 border border-white/10 bg-[#0f172a]">
+                          <ImageWithFallback
+                            src={b.event?.bannerImage}
+                            alt={b.event?.title || 'Event'}
+                            category={b.event?.category}
+                            className="w-full h-full object-cover"
+                          />
+                        </div>
+                        <h4 className="font-bold text-base text-white leading-tight line-clamp-2 group-hover:text-indigo-300 transition-colors">
+                          {b.event?.title || 'Unknown Event'}
+                        </h4>
+                      </div>
                       <span className={`px-3 py-1 rounded-full text-[9px] font-black uppercase tracking-widest border shrink-0 ${badgeStyle}`}>
                         {badgeText}
                       </span>
