@@ -9,6 +9,7 @@ const Navbar = () => {
   const [showNotifications, setShowNotifications] = useState(false);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [isScrolled, setIsScrolled] = useState(false);
+  const [navSearch, setNavSearch] = useState('');
 
   useEffect(() => {
     const handleScroll = () => {
@@ -32,6 +33,16 @@ const Navbar = () => {
 
   const [searchParams] = useSearchParams();
   const currentCategory = searchParams.get('category')?.toLowerCase() || '';
+
+  useEffect(() => {
+    setNavSearch(searchParams.get('search') || '');
+  }, [searchParams]);
+
+  const submitSearch = (event) => {
+    event.preventDefault();
+    const query = navSearch.trim();
+    navigate(query ? `/?search=${encodeURIComponent(query)}` : '/');
+  };
 
   const navLinks = ['Concerts', 'Sports', 'Comedy', 'Music', 'Exhibitions'];
 
@@ -69,10 +80,19 @@ const Navbar = () => {
         {/* Sockets / Auth / Notification Dropdown Controls */}
         <div className="hidden md:flex items-center space-x-4">
           {/* Global Search Bar (from mock-up) */}
-          <div className="relative mr-4">
-            <Search className="w-4 h-4 text-slate-400 absolute left-3 top-1/2 -translate-y-1/2" />
-            <input type="text" placeholder="Search events..." className="bg-slate-800/50 border border-slate-700/50 text-sm text-white placeholder-slate-400 rounded-lg pl-9 pr-4 py-2 focus:outline-none focus:border-indigo-500 w-64" />
-          </div>
+          <form onSubmit={submitSearch} className="relative mr-4">
+            <button type="submit" aria-label="Search events" className="absolute left-3 top-1/2 -translate-y-1/2">
+              <Search className="w-4 h-4 text-slate-400" />
+            </button>
+            <input
+              type="search"
+              value={navSearch}
+              onChange={(event) => setNavSearch(event.target.value)}
+              placeholder="Search events..."
+              aria-label="Search events"
+              className="bg-slate-800/50 border border-slate-700/50 text-sm text-white placeholder-slate-400 rounded-lg pl-9 pr-4 py-2 focus:outline-none focus:border-indigo-500 w-64"
+            />
+          </form>
 
           {user ? (
             <div className="flex items-center space-x-4">

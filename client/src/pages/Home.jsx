@@ -15,7 +15,7 @@ const Home = () => {
   const [searchParams, setSearchParams] = useSearchParams();
 
   // Search input and dropdown states
-  const [searchInput, setSearchInput] = useState('');
+  const [searchInput, setSearchInput] = useState(() => searchParams.get('search') || '');
   const debouncedSearch = useDebounce(searchInput, 300);
   const [showSuggestions, setShowSuggestions] = useState(false);
   const [activeSuggestionIdx, setActiveSuggestionIdx] = useState(-1);
@@ -29,6 +29,10 @@ const Home = () => {
   // Sync parameters from URL params
   const selectedCity = searchParams.get('city') || '';
   const selectedCategory = searchParams.get('category') || '';
+
+  useEffect(() => {
+    setSearchInput(searchParams.get('search') || '');
+  }, [searchParams]);
 
   // Fetch all events from API once (client-side filtering)
   const { data, isLoading, isError, error } = useQuery({
@@ -111,8 +115,24 @@ const Home = () => {
     const params = {};
     if (newCity) params.city = newCity;
     if (newCategory) params.category = newCategory;
+    const search = searchParams.get('search');
+    if (search) params.search = search;
     setSearchParams(params);
     setPage(1); // Reset page on filter change
+  };
+
+  const handleSearchChange = (value) => {
+    setSearchInput(value);
+    setPage(1);
+    setSearchParams((currentParams) => {
+      const params = new URLSearchParams(currentParams);
+      if (value.trim()) {
+        params.set('search', value);
+      } else {
+        params.delete('search');
+      }
+      return params;
+    }, { replace: true });
   };
 
   const handleCitySelect = (cityValue) => {
@@ -272,7 +292,7 @@ const Home = () => {
                   <input
                     type="text"
                     value={searchInput}
-                    onChange={(e) => { setSearchInput(e.target.value); setShowSuggestions(true); }}
+                    onChange={(e) => { handleSearchChange(e.target.value); setShowSuggestions(true); }}
                     onFocus={() => setShowSuggestions(true)}
                     onKeyDown={handleKeyDown}
                     placeholder="Search artist, event, or venue..."
