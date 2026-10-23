@@ -4,6 +4,19 @@ TicketWave is a production-grade, real-time event ticketing platform similar to 
 
 ---
 
+## Screenshots
+
+### Home page
+![TicketWave home page](./screenshots/home-page.png)
+
+### Event details and seat selection
+![Event details and seat selection](./screenshots/event-details.png)
+
+### Filtered events
+![Filtered events](./screenshots/filtered-events.png)
+
+---
+
 ## 🛠️ Tech Stack
 
 ### Backend
@@ -119,9 +132,14 @@ npm run seed
 ```
 
 This creates the following credentials:
-- **System Admin**: `admin@ticketwave.com` (Password: `Password123`)
-- **Event Organizer**: `organizer@ticketwave.com` (Password: `Password123`)
-- **Attendee User**: `user@ticketwave.com` (Password: `Password123`)
+- **System Admin**: `admin@ticketwave.com` (Password: `password123`)
+- **Event Organizer**: `organizer@ticketwave.com` (Password: `password123`)
+- **Attendee User**: `user@ticketwave.com` (Password: `password123`)
+
+### Sign in and test
+Use the attendee account to sign in and explore the application:
+- **Email**: `user@ticketwave.com`
+- **Password**: `password123`
 
 ---
 
