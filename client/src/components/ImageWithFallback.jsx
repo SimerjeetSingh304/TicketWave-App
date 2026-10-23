@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Music, Smile, Trophy, Presentation, Drama, Image as DefaultIcon, Palette } from 'lucide-react';
+import { Music, Smile, Trophy, Presentation, Drama, Image as DefaultIcon } from 'lucide-react';
 
 const CATEGORY_THEMES = {
   concerts: {
@@ -23,7 +23,7 @@ const CATEGORY_THEMES = {
     label: 'Conference'
   },
   theatre: {
-    gradient: 'from-fuchsia-600 via-pink-600 to-rose-600',
+    gradient: 'from-emerald-600 via-pink-600 to-rose-600',
     icon: Drama,
     label: 'Theatre Play'
   },
@@ -33,20 +33,18 @@ const CATEGORY_THEMES = {
     label: 'Music Event'
   },
   exhibitions: {
-    gradient: 'from-amber-600 via-yellow-500 to-orange-600',
-    icon: Palette,
+    gradient: 'from-green-600 via-teal-600 to-emerald-700',
+    icon: Presentation,
     label: 'Exhibition'
   }
 };
 
 const ImageWithFallback = ({ src, alt, className, category }) => {
   const [error, setError] = useState(false);
-  const [loading, setLoading] = useState(true);
 
-  // Reset states when src changes
+  // Reset error state if src changes
   useEffect(() => {
     setError(false);
-    setLoading(true);
   }, [src]);
 
   // Clean the category string
@@ -70,37 +68,22 @@ const ImageWithFallback = ({ src, alt, className, category }) => {
     return `${serverUrl}${src.startsWith('/') ? '' : '/'}${src}`;
   };
 
-  // No src or image failed to load → gradient fallback with icon
   if (error || !src) {
     return (
-      <div className={`relative bg-gradient-to-br ${theme.gradient} flex flex-col items-center justify-center select-none overflow-hidden ${className}`}>
-        {/* Subtle grid overlay */}
-        <div className="absolute inset-0 bg-[linear-gradient(to_right,#ffffff08_1px,transparent_1px),linear-gradient(to_bottom,#ffffff08_1px,transparent_1px)] bg-[size:14px_24px] pointer-events-none" />
-        {/* Category icon */}
-        <IconComponent className="w-10 h-10 text-white/40 mb-2 relative z-10" />
-        <span className="text-xs text-white/30 font-bold uppercase tracking-widest relative z-10">
-          {theme.label}
-        </span>
+      <div className={`relative bg-gradient-to-br ${theme.gradient} flex flex-col items-center justify-center select-none ${className}`}>
+        {/* Glow grid background */}
+        <div className="absolute inset-0 bg-[linear-gradient(to_right,#ffffff05_1px,transparent_1px),linear-gradient(to_bottom,#ffffff05_1px,transparent_1px)] bg-[size:14px_24px] pointer-events-none"></div>
       </div>
     );
   }
 
   return (
-    <div className={`relative ${className} overflow-hidden`}>
-      {/* Shimmer skeleton shown while image is loading */}
-      {loading && (
-        <div className="absolute inset-0 bg-slate-800 overflow-hidden">
-          <div className="h-full w-full animate-pulse bg-gradient-to-r from-slate-800 via-slate-700 to-slate-800 bg-[length:200%_100%]" />
-        </div>
-      )}
-      <img
-        src={getImageUrl()}
-        alt={alt}
-        onLoad={() => setLoading(false)}
-        onError={() => { setError(true); setLoading(false); }}
-        className={`w-full h-full object-cover transition-opacity duration-300 ${loading ? 'opacity-0' : 'opacity-100'}`}
-      />
-    </div>
+    <img
+      src={getImageUrl()}
+      alt={alt}
+      onError={() => setError(true)}
+      className={className}
+    />
   );
 };
 
